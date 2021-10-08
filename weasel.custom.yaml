@@ -21,6 +21,7 @@ patch:
   "style/color_scheme": metro
   "style/display_tray_icon": false
   "style/font_point": 12
+  "style/font_face": "98WB-2"
   "style/horizontal": true
   "style/inline_preedit": true
   "style/layout/border_width": 1

@@ -4,6 +4,6 @@ patch:
   "style/fullscreen": false
   "style/inline_preedit": false
 #  "style/preedit_type": composition
-  "style/horizontal": false
-  "style/font_point": 18
+  "style/horizontal": true
+  "style/font_point": 12
   "translator/enable_completion": true

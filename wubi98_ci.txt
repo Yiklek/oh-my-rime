@@ -2,9 +2,20 @@
 #@/db_name	wubi98_ci
 #@/db_type	tabledb
 #@/rime_version	1.7.3
-#@/tick	7
+#@/tick	17
+工	aaaa	3
 预设	cnyw	1
+上衣	hhye	1
+中坚力量	kjej	1
 吃	kt	2
 吃	ktnn	1
 饭	qnrc	1
+的	r	1
+可是	skjg	1
 可以	skny	2
+哥们	skwu	1
+行业	tgoh	1
+我	trny	1
+工工	encaaaa	0
+工工工	encaaaa	0
+行业的	enctorq	0

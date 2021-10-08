@@ -5,5 +5,5 @@ patch:
   "style/inline_preedit": true
   "style/preedit_type": composition
   "style/horizontal": true
-  "style/font_point": 18
+  "style/font_point": 12
   "translator/enable_completion": true
