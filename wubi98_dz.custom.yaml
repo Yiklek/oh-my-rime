@@ -1,0 +1,9 @@
+patch:
+  "style/font_face": "98WB-2"
+  "style/text_orientation": horizontal
+  "style/fullscreen": false
+  "style/inline_preedit": true
+  "style/preedit_type": composition
+  "style/horizontal": true
+  "style/font_point": 18
+  "translator/enable_completion": true

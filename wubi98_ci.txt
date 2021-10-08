@@ -1,0 +1,10 @@
+# Rime table
+#@/db_name	wubi98_ci
+#@/db_type	tabledb
+#@/rime_version	1.7.3
+#@/tick	7
+预设	cnyw	1
+吃	kt	2
+吃	ktnn	1
+饭	qnrc	1
+可以	skny	2

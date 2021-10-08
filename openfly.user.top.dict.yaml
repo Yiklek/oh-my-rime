@@ -1,0 +1,12 @@
+# Rime dictionary
+# encoding: utf-8
+#
+# 此用户词库的词语如遇重码则置顶
+
+---
+name: openfly.user.top
+version: "v9.9m"
+sort: by_weight
+use_preset_vocabulary: false
+...
+微博  wb

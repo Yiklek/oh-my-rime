@@ -1,0 +1,16 @@
+# encoding: utf-8
+---
+recipe:
+  Rx: openfly
+  description: >-
+    词库开源的小鹤音形 Rime 配方
+
+install_files: >-
+  openfly*.yaml
+  lua/openfly*.lua
+
+patch_files:
+  default.custom.yaml:
+    - patch/+:
+        "switcher/save_options/+":
+          - "openfly_enable_2nd_short"

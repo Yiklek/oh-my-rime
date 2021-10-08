@@ -1,0 +1,26 @@
+__build_info:
+  rime_version: 1.7.3
+  timestamps:
+    default: 1614267164
+    default.custom: 1633681240
+    key_bindings: 1633681240
+    key_bindings.custom: 0
+    punctuation: 1633681240
+    punctuation.custom: 0
+    wb_spelling.custom: 1633681240
+    wb_spelling.schema: 1633681240
+menu:
+  page_size: 5
+schema:
+  author:
+    - "Lua-table by Ace-Who"
+  description: |
+    伪方案，不能打字。
+    不要选我，不要修改本方案及配套词典。
+    仅用于辅助三重注解方案实现注解功能。
+    
+  name: "伪方案"
+  schema_id: wb_spelling
+  version: 18.31
+translator:
+  dictionary: wb_spelling

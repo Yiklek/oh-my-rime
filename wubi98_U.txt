@@ -1,0 +1,7 @@
+# Rime table
+#@/db_name	wubi98_U
+#@/db_type	tabledb
+#@/rime_version	1.7.3
+#@/tick	2
+劣	iter	1
+我	q	1

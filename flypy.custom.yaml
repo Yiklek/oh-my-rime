@@ -1,0 +1,5 @@
+# encoding: utf-8
+patch:
+  menu:
+    page_size: 8 #候选项数
+  "translator/enable_completion": true

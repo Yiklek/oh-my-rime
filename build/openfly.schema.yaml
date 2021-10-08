@@ -1,0 +1,176 @@
+__build_info:
+  rime_version: 1.7.3
+  timestamps:
+    default: 1614267164
+    default.custom: 1633681240
+    key_bindings: 1633681240
+    key_bindings.custom: 0
+    openfly.custom: 1633681240
+    openfly.schema: 1633681240
+    punctuation: 1633681240
+    punctuation.custom: 0
+engine:
+  filters:
+    - "lua_filter@openfly_hint_filter"
+    - "lua_filter@openfly_deletion_filter"
+    - simplifier
+    - "simplifier@simplification"
+    - uniquifier
+  processors:
+    - "lua_processor@openfly_shortcut_processor"
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - punct_translator
+    - table_translator
+    - "lua_translator@openfly_date_translator"
+    - "lua_translator@openfly_time_translator"
+    - "lua_translator@openfly_shortcut_translator"
+    - reverse_lookup_translator
+    - "history_translator@history"
+history:
+  initial_quality: 1
+  input: ";f"
+  size: 1
+key_binder:
+  bindings:
+    - {accept: comma, send: Page_Up, when: paging}
+    - {accept: period, send: Page_Down, when: has_menu}
+  import_preset: default
+menu:
+  page_size: 5
+punctuator:
+  full_shape:
+    " ": {commit: "　"}
+    "!": {commit: "！"}
+    "\"": {pair: ["“", "”"]}
+    "#": ["＃", "⌘"]
+    "$": ["￥", "$", "€", "£", "¥", "¢", "¤"]
+    "%": ["％", "°", "℃"]
+    "&": "＆"
+    "'": {pair: ["‘", "’"]}
+    "(": "（"
+    ")": "）"
+    "*": ["＊", "·", "・", "×", "※", "❂"]
+    "+": "＋"
+    ",": {commit: "，"}
+    "-": "－"
+    .: {commit: "。"}
+    "/": ["／", "÷"]
+    ":": {commit: "："}
+    ";": {commit: "；"}
+    "<": ["《", "〈", "«", "‹"]
+    "=": "＝"
+    ">": ["》", "〉", "»", "›"]
+    "?": {commit: "？"}
+    "@": ["＠", "☯"]
+    "[": ["「", "【", "〔", "［"]
+    "\\": ["、", "＼"]
+    "]": ["」", "】", "〕", "］"]
+    "^": {commit: "……"}
+    _: "——"
+    "`": "｀"
+    "{": ["『", "〖", "｛"]
+    "|": ["·", "｜", "§", "¦"]
+    "}": ["』", "〗", "｝"]
+    "~": "～"
+  half_shape:
+    "!": {commit: "！"}
+    "\"": {pair: ["“", "”"]}
+    "#": "#"
+    "$": ["￥", "$", "€", "£", "¥", "¢", "¤"]
+    "%": ["%", "％", "°", "℃"]
+    "&": "&"
+    "'": {pair: ["‘", "’"]}
+    "(": "（"
+    ")": "）"
+    "*": ["*", "＊", "·", "・", "×", "※", "❂"]
+    "+": "+"
+    ",": {commit: "，"}
+    "-": "-"
+    .: {commit: "。"}
+    "/": ["、", "/", "／", "÷"]
+    ":": {commit: "："}
+    ";": {commit: "；"}
+    "<": ["《", "〈", "«", "‹"]
+    "=": "="
+    ">": ["》", "〉", "»", "›"]
+    "?": {commit: "？"}
+    "@": "@"
+    "[": ["「", "【", "〔", "［"]
+    "\\": ["、", "\\", "＼"]
+    "]": ["」", "】", "〕", "］"]
+    "^": {commit: "……"}
+    _: "——"
+    "`": "`"
+    "{": ["『", "〖", "｛"]
+    "|": ["·", "|", "｜", "§", "¦"]
+    "}": ["』", "〗", "｝"]
+    "~": ["~", "～"]
+  import_preset: default
+recognizer:
+  import_preset: default
+  patterns:
+    email: "^[A-Za-z][-_.0-9A-Za-z]*@.*$"
+    punct: ""
+    reverse_lookup: "[a-z`]*`+[a-z`]*"
+    uppercase: ""
+    url: "^(www[.]|https?:|ftp[.:]|mailto:|file:).*$|^[a-z]+[.].+$"
+reverse_lookup:
+  comment_format:
+    - "xform/ / /"
+  dictionary: openfly_reverse
+schema:
+  author:
+    - "方案设计：何海峰 <flypy@qq.com>"
+    - "修改：amorphobia <xu350n9@gmail.com>"
+  dependencies:
+    - openfly_reverse
+  description: "词库开源的小鹤音形 Rime 配方"
+  name: "开源小鹤"
+  schema_id: openfly
+  version: v9.9m
+simplification:
+  opencc_config: s2tw.json
+  option_name: simplification
+  tips: all
+speller:
+  alphabet: "/;zyxwvutsrqponmlkjihgfedcba"
+  auto_clear: max_length
+  auto_select: true
+  auto_select_pattern: "^;.$|^\\w{4}$"
+  finals: "/"
+  initials: "abcdefghijklmnopqrstuvwxyz;"
+  max_code_length: 4
+style:
+  horizontal: false
+switches:
+  - name: ascii_mode
+    reset: 0
+  - name: full_shape
+  - name: simplification
+    reset: 0
+  - name: ascii_punct
+    reset: 0
+  - name: openfly_enable_2nd_short
+    states: ["二重简码关闭", "开启"]
+translator:
+  dictionary: openfly
+  disable_user_dict_for_patterns:
+    - "^z.*$"
+  enable_charset_filter: false
+  enable_completion: false
+  enable_sentence: false
+  enable_user_dict: false

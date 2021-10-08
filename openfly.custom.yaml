@@ -1,0 +1,6 @@
+# encoding: utf-8
+patch:
+  switches/+:
+    - name: openfly_enable_2nd_short
+      states: [ 二重简码关闭, 开启 ]
+
