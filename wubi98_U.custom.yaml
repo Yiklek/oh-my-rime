@@ -17,3 +17,4 @@ patch:
   "style/layout/hilite_padding": 2
   "style/layout/round_corner": 4
   "translator/enable_completion": true
+  "key_binder/import_preset": default
