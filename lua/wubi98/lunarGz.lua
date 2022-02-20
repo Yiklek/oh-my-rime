@@ -1,4 +1,5 @@
-﻿------------------------------------
+﻿local local_require = require('util').get_local_require("wubi98")
+------------------------------------
 ------wirting by 98wubi Group-------
 ------http://98wb.ys168.com/--------
 ------------------------------------
@@ -7,7 +8,7 @@
 --[[干支历的年以立春发生时刻（注意，不是立春日的0时）为年干支的起点；各月干支以十二节时刻（注意，不一定是各节气日的0时）
 --]]
 -- require('common')
-require("lunarJq")
+local_require("lunarJq")
 
 GanZhiLi = {
 }

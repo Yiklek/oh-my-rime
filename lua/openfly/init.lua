@@ -1,0 +1,7 @@
+local local_require = require("util").get_local_require("openfly")
+openfly_shortcut_processor = local_require("openfly_shortcut_processor")
+openfly_date_translator = local_require("openfly_date_translator")
+openfly_time_translator = local_require("openfly_time_translator")
+openfly_shortcut_translator = local_require("openfly_shortcut_translator")
+openfly_hint_filter = local_require("openfly_hint_filter")
+openfly_deletion_filter = local_require("openfly_deletion_filter")

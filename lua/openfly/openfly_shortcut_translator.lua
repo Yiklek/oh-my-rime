@@ -1,4 +1,5 @@
-local common = require("openfly_common")
+local local_require = require("util").get_local_require("openfly")
+local common = local_require("openfly_common")
 
 local labels = {
   ["Windows"] = {

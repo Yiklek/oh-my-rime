@@ -14,4 +14,5 @@ function time_translator(input, seg)
    end
 end
 
-calculator_translator = require("calculator_translator")
+local local_require = require("util").get_local_require("flypy")
+calculator_translator = local_require("calculator_translator")

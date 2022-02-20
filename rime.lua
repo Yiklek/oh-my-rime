@@ -1,3 +1,3 @@
-require('rime_flypy')
-require('rime_openfly')
-require('rime_wubi98')
+require('flypy')
+require('openfly')
+require('wubi98')

@@ -1,4 +1,5 @@
-﻿------------------------------------
+﻿local local_require = require('util').get_local_require("wubi98")
+------------------------------------
 ------wirting by 98wubi Group-------
 ------http://98wb.ys168.com/--------
 ------------------------------------
@@ -6,15 +7,14 @@
 --  translators:
 --      - "lua_translator@time_date"
 -----------------------------------
-
 rv_var={ week_var="week",date_var="date",nl_var="nl",time_var="time",jq_var="jq"}	--日期编码关键字修改
-new_spelling = require("new_spelling")
-submit_text_processor = require("Submit_text")
-helper = require("helper")
-require("lunarDate")
-require("lunarJq")
-require("lunarGz")
-require("number")
+new_spelling = local_require("new_spelling")
+submit_text_processor = local_require("Submit_text")
+helper = local_require("helper")
+local_require("lunarDate")
+local_require("lunarJq")
+local_require("lunarGz")
+local_require("number")
 
 -- --=========================================================;获取Rime程序目录/用户目录/同步目录路径===========================
 -- --==========================================================98资源库http://98wb.ys168.com/===============================
@@ -134,6 +134,7 @@ function formatRimeDir(FilePath,dirName)
 end
 
 luaDefalutDir=formatRimeDir(RimeDefalutDir,"lua") -- 设置lua脚本文件读取全局默认路径为data\lua目录
+luaDefalutDir=formatRimeDir(luaDefalutDir,"wubi98") -- 设置lua脚本文件读取全局默认路径为data\lua目录
 local hotstring_obj=FormatFileContent(luaDefalutDir.."hotstring.txt")  -- 读取hotstring.txt内容并格式化为所需数据格式
 -- print(hotstring_obj["bjy"][1][1].."\t"..hotstring_obj["bjy"][1][2])
 -- io.open(luapath,"w"):write("123"):close()
