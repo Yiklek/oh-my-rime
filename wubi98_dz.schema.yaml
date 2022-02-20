@@ -24,7 +24,8 @@ switches:
   - name: new_spelling
     reset: 1
     states: [ 隐,显 ]
-  - name: jiayin
+  #- name: jiayin
+  - name: rvl_zhuyin
     reset: 1
   - name: gb2312
     reset: 0
@@ -34,7 +35,8 @@ switches:
     states: [ 音, 哑 ]
   - name: single_char
     reset: 0
-    states: [ 词, 单 ]
+    #states: [ 词, 单 ]
+    states: [ 单, 词 ]
   - name: ascii_punct
     reset: 0
     states: [ 。，, ．， ]
@@ -52,6 +54,8 @@ engine:
     - uniquifier
   processors:
     - ascii_composer
+    - lua_processor@submit_text_processor
+    - lua_processor@switch_processor
     - recognizer
     - key_binder
     - speller
@@ -64,7 +68,8 @@ engine:
     - matcher
     - "affix_segmentor@mkst"
     - "affix_segmentor@rvlk1"
-    - "affix_segmentor@zhuyin_fix"
+    #- "affix_segmentor@zhuyin_fix"
+    - "affix_segmentor@rvl_zhuyin"
     - abc_segmentor
     - punct_segmentor
     - fallback_segmentor
@@ -75,7 +80,8 @@ engine:
     - table_translator
     - "table_translator@fixed"
     - "table_translator@mkst"
-    - "table_translator@zhuyin_fix"
+    #- "table_translator@zhuyin_fix"
+    - "table_translator@rvl_zhuyin"
     - "history_translator@history"
     - "lua_translator@helper"
     - "lua_translator@time_date"
@@ -93,7 +99,7 @@ translator:
   enable_sentence: false
   enable_encoder: false
   encode_commit_history: false
-  max_phrase_length: 2
+  max_phrase_length: 4
   enable_completion: false
   enable_user_dict: false
   disable_user_dict_for_patterns:
@@ -113,6 +119,13 @@ mkst:
   tips: "〔精准造词〕"
   tag: mkst
 
+rvl_zhuyin:
+  __include: /translator
+  initial_quality: 10
+  enable_sentence: true
+  prefix: '~'
+  tips: "〔以形查音〕"
+  tag: zhuyin
 reverse_lookup:
   __include: /translator
   dictionary: py
@@ -173,7 +186,8 @@ recognizer:
     rvlk2: "^z[a-z]*'?$"
     uppercase: "[A-Z][-_+.'0-9A-Za-z]*$"
     url: "^(www[.]|https?:|ftp[.:]|mailto:|file:).*$|^[a-z]+[.].+$"
-    zhuyin_fix: "~[a-y]*?$"
+    #zhuyin_fix: "~[a-y]*?$"
+    zhuyin: "~[a-y]*?$"
     helper: '^help$'
 charset_filter:
   option_name: gb2312
@@ -186,6 +200,10 @@ history:
 
 key_binder:
   bindings: 
+    - { when: has_menu, accept: Left, send: Up }
+    - { when: has_menu, accept: Right, send: Down }
+    - {accept: minus, send: Page_Up, when: has_menu}
+    - {accept: equal, send: Page_Down, when: has_menu}
     - {accept: semicolon, send: 2, when: has_menu}
     - {accept: apostrophe, send: 3, when: has_menu}
     - {accept: space, send: Escape, when: composing}

@@ -135,10 +135,58 @@ local function get_tricomment(cand, env)
 	return ''
 end
 
+local function file_exists(path)
+	local file = io.open(path, "rb")
+	if file then file:close() end
+	return file ~= nil
+end
+
+local function formatDir(path,filename)
+	if path:find("\\") then
+		return path .. "\\" .. filename
+	elseif path:find("/") then
+		return path .. "/" .. filename
+	else
+		return path .. "\\" .. filename
+	end
+end
+
+local function get_item(filepath,item)
+	local file = io.open(filepath, "rb")
+	if file then
+		local isexist=nil
+		for line in file:lines() do
+			if line:find(item) and not line:find("(%#)") then
+				isexist=line:gsub('(.-):%s*(.-)', '%2')
+			end
+		end
+		file:close()
+		return isexist
+	end
+end
+
+local function get_horizontal_style(filename,item)
+	local shared_data_dir=rime_api.get_shared_data_dir()         -- 获取程序目录data路径
+	local user_data_dir=rime_api.get_user_data_dir()         -- 获取用户目录路径
+	local flag=get_item(formatDir(user_data_dir,filename),item)
+	if flag~=nil then
+		return flag
+	else
+		flag=get_item(formatDir(user_data_dir,"weasel.custom.yaml"),item)
+		if flag~=nil then return flag else return get_item(formatDir(shared_data_dir,filename),item) end
+	end
+end
+
 local function filter(input, env)
 	local codetext=env.engine.context.input  -- 获取编码
 	local script_text=env.engine.context:get_script_text()
 	local hide_pinyin=env.engine.context:get_option("new_hide_pinyin")
+	local schema_name=env.engine.schema.schema_name or ""
+	local schema_id=env.engine.schema.schema_id or ""
+	local spelling_states=env.engine.context:get_option(spelling_keyword)
+	-- local composition = env.engine.context.composition
+	-- local segment = composition:back()
+	-- if codetext==rv_var.switch_keyword and schema_name then segment.prompt =" 〔 当前方案："..schema_name.." 〕" end
 	-- 获取输入法常用参数
 	-- env.engine.context:get_commit_text() -- filter中为获取编码
 	-- env.engine.context:get_script_text()-- 获取编码带引导符
@@ -151,12 +199,15 @@ local function filter(input, env)
 	-- local rime_version=rime_api.get_rime_version()         -- 获取rime版本号--macos无效
 	-- local shared_data_dir=rime_api.get_shared_data_dir()         -- 获取程序目录data路径
 	-- local user_data_dir=rime_api.get_user_data_dir()         -- 获取用户目录路径
-	if env.engine.context:get_option("new_spelling") then
+	local horizontal=get_horizontal_style(schema_id..".custom.yaml","style/horizontal") or ""
+	CandidateText={}
+	if spelling_states then
 		for cand in input:iter() do
-			if cand.type == 'simplified' and env.name_space == 'new_for_rvlk' then
+			table.insert(CandidateText,cand.text)
+			if cand.type == 'simplifier' and env.name_space == 'new_for_rvlk' then
 				if cand.comment=="" then
 					local comment = get_tricomment(cand, env)
-					yield(Candidate("simp_rvlk", cand.start, cand._end, cand.text, comment))
+					yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text, comment))
 				end
 			else
 				if script_text:find("^[a-z]*([%`])[a-z%`]*") and not script_text:find("%p$") or script_text:find("^z[a-z]*") and not script_text:find("%p$") or script_text:find("^([%/])[a-z]*") and not script_text:find("%p$") then
@@ -165,37 +216,41 @@ local function filter(input, env)
 					local code_comment=env.code_rvdb:lookup(cand.text)
 					if add_comment~=nil or add_comment~="" then
 						if cand.comment == "" then
-							yield(Candidate("simp_rvlk", cand.start, cand._end, cand.text,add_comment))
+							yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text,add_comment))
 						else
 							if cand.comment:find("☯") then
-								yield(Candidate("simp_rvlk", cand.start, cand._end, cand.text,add_comment .. cand.comment))
-								-- yield(Candidate("simp_rvlk", cand.start, cand._end, cand.text,add_comment .. cand.comment:gsub("☯","")))   -- 去除精准造词太极图标
+								yield(cand)
+								-- yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text,add_comment .. cand.comment))
 							else
 								if utf8.len(cand.text) == 1 and code_comment and not hide_pinyin then
-									yield(Candidate("simp_rvlk", cand.start, cand._end, cand.text,xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '[%1'..' · '..'%2'..' · '..'%3]'))))
+									yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text,xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '[%1'..' · '..'%2'..' · '..'%3]'))))
 								else
-									yield(Candidate("simp_rvlk", cand.start, cand._end, cand.text,add_comment:gsub("〕"," · ") .. cand.comment .. " 〕"))
+									yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text,add_comment:gsub("〕"," · ") .. cand.comment .. " 〕"))
 								end
 							end
 						end
 					end
+				elseif script_text:find("^([%~])[a-z]*") and not script_text:find("%p$") and env.engine.context:get_option("rvl_zhuyin") then
+					local code_comment=env.code_rvdb:lookup(cand.text)
+					if code_comment~="" then
+						code_comment=xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '[%3'..' · '..'%1]'))
+						yield(Candidate("rvl_zhuyin", cand.start, cand._end, cand.text,code_comment))
+					else
+						yield(cand)
+					end
+				-- elseif script_text==rv_var.switch_keyword then
+				-- 	if cand.text:find("方案") then cand.comment="〔 "..schema_name.." 〕" end
+				-- 	yield(cand)
 				else
 					local add_comment = ''
 					local code_comment=env.code_rvdb:lookup(cand.text)
 					if cand.type == 'punct' then
-						add_comment = xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '[%1'..' · '..'%2'..' · '..'%3]')).."+"
+						add_comment = xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '[%1'..' · '..'%2'..' · '..'%3]'))
 					elseif cand.type ~= 'sentence' then
 						add_comment = get_tricomment(cand, env)
 					end
 					if add_comment ~= '' then
-						if cand.type ~= 'completion' and (
-								(env.name_space == 'new' and env.is_mixtyping) or
-								(env.name_space == 'new_for_rvlk')
-								) then
-							cand.comment = add_comment
-						else
-							if cand.comment=="" then cand.comment = add_comment .. cand.comment end
-						end
+						if cand.comment=="" then cand.comment = add_comment .. cand.comment end
 					end
 					yield(cand)
 				end
@@ -204,13 +259,14 @@ local function filter(input, env)
 	else
 		if script_text:find("^z") then
 			for cand in input:iter() do
+				table.insert(CandidateText,cand.text)
 				local add_comment=get_tricomment(cand, env)
 				local code_comment=env.code_rvdb:lookup(cand.text)
 				if cand.comment=="" then
 					if add_comment~=nil or add_comment~="" then
 						cand.comment = add_comment
 					end
-				else
+				elseif not horizontal:find("true") then
 					if add_comment~=nil or add_comment~="" then
 						if utf8.len(cand.text) == 1 and code_comment and not hide_pinyin then
 							cand.comment = xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '[%1'..' · '..'%2'..' · '..'%3]'))
@@ -220,12 +276,27 @@ local function filter(input, env)
 							cand.comment = add_comment:gsub("〕"," · ") .. cand.comment .. " 〕"
 						end
 					end
+				else
+					if cand.comment:find("%s") then cand.comment=" "..cand.comment:gsub("%s+"," · ") else cand.comment=" "..cand.comment end
 				end
 				yield(cand)
 			end
+		elseif script_text:find("^([%~])[a-z]*") and not script_text:find("%p$") and env.engine.context:get_option("rvl_zhuyin") then
+			for cand in input:iter() do
+				table.insert(CandidateText,cand.text)
+				local code_comment=env.code_rvdb:lookup(cand.text)
+				if code_comment~="" then
+					code_comment=xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '%3')):gsub("^%s+",""):gsub("%s+$","")
+					if code_comment:find("%s") then code_comment=code_comment:gsub("%s+"," · ") end
+					yield(Candidate("zhuyin_rvlk", cand.start, cand._end, cand.text," "..code_comment))
+				end
+			end
 		else
 			for cand in input:iter() do
-				-- if cand.comment:find("☯") then cand.comment="" end --  去除精准造词太极图标
+				table.insert(CandidateText,cand.text)
+				-- if script_text==rv_var.switch_keyword then
+				-- 	if cand.text:find("方案") then cand.comment="〔 "..schema_name.." 〕" end
+				-- end
 				yield(cand)
 			end
 		end
@@ -234,6 +305,7 @@ end
 
 local function init(env)
 	local config = env.engine.schema.config
+	page_size = env.engine.schema.page_size
 	local spll_rvdb = config:get_string('lua_reverse_db/spelling')
 	local code_rvdb = config:get_string('lua_reverse_db/code')
 	local abc_extags_size = config:get_list_size('abc_segmentor/extra_tags')

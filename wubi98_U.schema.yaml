@@ -23,7 +23,8 @@ switches:
   - name: new_spelling
     reset: 1
     states: [ 隐,显 ]
-  - name: jiayin
+  #- name: jiayin
+  - name: rvl_zhuyin
     reset: 1
   - name: gb2312
     reset: 0
@@ -47,10 +48,12 @@ engine:
     - "reverse_lookup_filter@ci_reverse_lookup"
     - lua_filter@new_spelling@spelling
     - lua_filter@single_char
-    - "simplifier@jiayin"
+    #- "simplifier@jiayin"
     - uniquifier
   processors:
     - ascii_composer
+    - lua_processor@submit_text_processor
+    - lua_processor@switch_processor
     - recognizer
     - key_binder
     - speller
@@ -63,7 +66,8 @@ engine:
     - matcher
     - "affix_segmentor@mkst"
     - "affix_segmentor@rvlk1"
-    - "affix_segmentor@zhuyin_fix"
+    #- "affix_segmentor@zhuyin_fix"
+    - "affix_segmentor@rvl_zhuyin"
     - abc_segmentor
     - punct_segmentor
     - fallback_segmentor
@@ -74,7 +78,8 @@ engine:
     - table_translator
     - "table_translator@fixed"
     - "table_translator@mkst"
-    - "table_translator@zhuyin_fix"
+    #- "table_translator@zhuyin_fix"
+    - "table_translator@rvl_zhuyin"
     - "history_translator@history"
     - "lua_translator@helper"
     - "lua_translator@time_date"
@@ -85,7 +90,8 @@ speller:
   max_code_length: 4
   
 translator:
-  dictionary: wubi98_U.extended
+  #dictionary: wubi98_U.extended
+  dictionary: wubi98_U
   db_class: tabledb
   initial_quality: 100000
   enable_charset_filter: false
@@ -111,6 +117,14 @@ mkst:
   prefix: '`'
   tips: "〔精准造词〕"
   tag: mkst
+
+rvl_zhuyin:
+  __include: /translator
+  initial_quality: 10
+  enable_sentence: true
+  prefix: '~'
+  tips: "〔以形查音〕"
+  tag: zhuyin
 
 reverse_lookup:
   __include: /translator
@@ -185,6 +199,10 @@ history:
 
 key_binder:
   bindings: 
+    - { when: has_menu, accept: Left, send: Up }
+    - { when: has_menu, accept: Right, send: Down }
+    - {accept: minus, send: Page_Up, when: has_menu}
+    - {accept: equal, send: Page_Down, when: has_menu}
     - {accept: semicolon, send: 2, when: has_menu}
     - {accept: apostrophe, send: 3, when: has_menu}
     - {accept: space, send: Escape, when: composing}

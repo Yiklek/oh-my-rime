@@ -37626,6 +37626,7 @@ encoder:
 𫺍	jvnu
 𤈌	jvou
 𣆲	jvpc
+帰	jvph
 㫶	jvph
 𧌈	jvph
 𨕻	jvpi
@@ -52198,7 +52199,7 @@ encoder:
 𬤶	nygu
 忭	nyh
 𣥉	nyhd
-忄	nyhy
+忄	nyyh
 忭	nyhy
 尺	nyi
 乄	nyi
@@ -99594,7 +99595,6 @@ encoder:
 𡝶	ytvf
 诿	ytvg
 諉	ytvg
-帰	ytvh
 𬀏	ytvo
 𧩺	ytvy
 旍	ytwc
@@ -99975,10 +99975,10 @@ encoder:
 诊	ywet
 劥	ywet
 診	ywet
-裦	ywfe
-褎	ywfe
-褏	ywfe
-襃	ywfe
+裦	ythe
+褎	ythe
+褏	ythe
+襃	ythe
 𮘅	ywfh
 𧫕	ywfi
 𰨇	ywfi
@@ -100498,4 +100498,30 @@ encoder:
 ⾔	yyyy
 	yyyy
 	yyyy
-〇	llll	10	llll
+〇	llll
+󰂆󰀁󰂇󰂉󰅬󰅅󰅓󰅚󰁺󰂈󰂊󰄖󰀀󰀂󰀄󰂋󰅙󰀃󰂌	az
+󰄅󰄆󰄇󰄈󰄉󰄊󰅣	sz
+󰂝󰂢󰁼󰂜󰀍󰂞󰂟󰂠󰂡󰂣󰂤󰀎󰀌	dz
+󰂮󰂯󰂭󰂰󰂵󰂱󰀛󰂳󰂴󰀜󰀚󰀙󰂲󰀘	fz
+󰂷󰁽󰂸󰀟󰀠󰂹󰅜󰂅󰀡󰂶󰀞󰀝	gz
+󰂼󰀣󰀥󰁾󰂽󰂾󰂿󰀤󰃀󰂺󰂻󰀢	hz
+󰀰󰀱󰃊󰃋󰃌󰃍󰀯󰀲󰀳󰀮󰀭󰃉󰀬	jz
+󰀸󰃎󰃏󰀶󰀵	kz
+󰃐󰃑󰃒󰃓󰀹󰀺󰀻󰃔󰃕󰀷󰃖󰃗	lz
+󰀼󰃘󰀽󰀾󰅏󰀿󰅐󰅑󰃙󰃚󰃛󰃜	mz
+󰃴󰃶󰃻󰁚󰁛󰁜󰁝󰁞󰁟󰁠󰁡󰁢󰃷󰃸󰃹󰃵󰃺	qz
+󰄤󰄦󰁯󰅄󰅈󰅉󰁰󰄨󰄥󰁱󰅁󰄧󰅮󰅰	wz
+󰂧󰅘󰂨󰀗󰂪󰂬󰀖󰂫󰀐󰀑󰀒󰅗󰅎󰅆󰂦󰂩󰀓󰅝󰂥󰀔󰀕󰀏	ez
+󰃽󰄁󰂀󰃾󰄂󰃿󰄄󰁤󰃼󰄀󰁣	rz
+󰄌󰄍󰄎󰄐󰁿󰄏󰄋󰁥	tz
+󰄳󰄴󰄵󰄸󰀴󰁷󰁸󰄶󰄷󰄹󰅍󰂃󰄲󰄼󰁶	yz
+󰄓󰄔󰄘󰄛󰁨󰄒󰄕󰄜󰄝󰄙󰄑󰁪󰅛󰄗󰄿󰄚󰅌󰁩󰁦󰁧	uz
+󰃁󰀨󰀪󰀧󰅇󰅊󰃇󰃈󰅪󰅰󰅫󰀩󰃃󰃄󰃆󰀫󰃅󰃂󰅯󰀦	iz
+󰃩󰃪󰁙󰃫󰃨󰁘󰁖󰁗󰃬	oz
+󰃮󰃭󰅂󰃲󰃰󰃳󰃯󰃱	pz
+󰁁󰁂󰁃󰁄󰃞󰃟󰃠󰅭󰃡󰃢󰃥󰅋󰁅󰃣󰃤󰁆󰃧󰁇󰁈󰁉󰁊󰁋󰁌󰁍󰁎󰁏󰁐󰁒󰁓󰁔󰁕󰂁󰂂󰂄󰃝󰃦󰄃󰄺󰄻󰁑󰅕󰅖󰁀	nz
+󰂍󰂎󰂏󰂒󰀆󰂖󰂗󰀇󰂑󰁹󰂓󰂔󰀈󰂕󰂐󰄽󰀅	bz
+󰄡󰄟󰄠󰄞󰅔󰁬󰁭󰁮󰅃󰄢󰄣󰅞󰅟󰁫	vz
+󰂘󰂙󰀊󰂚󰀋󰂛󰀉󰁻󰅒	cz
+󰁲󰄩󰄪󰄫󰅀󰄭󰄯󰄰󰁴󰄮󰁳󰄬󰁵󰄱󰅢󰅤󰅥󰅦󰅧󰅨󰅩	xz
+

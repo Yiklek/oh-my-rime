@@ -208,14 +208,18 @@ function lunarJzl(y)
     local x,yidx,midx,didx,hidx
     y=tostring(y)
     x = GanZhiLi:new()
-    x:setTime(os.time({year=tonumber(y.sub(y,1,4)),month=tonumber(y.sub(y,5,-5)), day=tonumber(y.sub(y,7,-3)),hour=tonumber(y.sub(y,9,-1)),min=4,sec=5}))
-    yidx = x:getYearGanZhi()
-    midx = x:getMonGanZhi()
-    didx = x:getDayGanZhi()
-    hidx = x:getHourGanZhi()
-    GzData= get60JiaZiStr(yidx) .. '年' .. get60JiaZiStr(midx) .. '月' .. get60JiaZiStr(didx) .. '日' .. get60JiaZiStr(hidx) .. '时'
-    --print('干支:'  .. GzData)
-    return GzData
+	if tonumber(y.sub(y,1,4))>1970 then
+		x:setTime(os.time({year=tonumber(y.sub(y,1,4)),month=tonumber(y.sub(y,5,6)), day=tonumber(y.sub(y,7,8)),hour=tonumber(y.sub(y,9,10)),min=4,sec=5}))
+		yidx = x:getYearGanZhi()
+		midx = x:getMonGanZhi()
+		didx = x:getDayGanZhi()
+		hidx = x:getHourGanZhi()
+		GzData= get60JiaZiStr(yidx) .. '年' .. get60JiaZiStr(midx) .. '月' .. get60JiaZiStr(didx) .. '日' .. get60JiaZiStr(hidx) .. '时'
+		--print('干支:'  .. GzData)
+		return GzData
+	else
+		return "不支持1971年前的日期"
+	end
 end
 
 --测试

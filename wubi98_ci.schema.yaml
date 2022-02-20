@@ -24,7 +24,8 @@ switches:
   - name: new_spelling
     reset: 1
     states: [ 隐,显 ]
-  - name: jiayin
+  #- name: jiayin
+  - name: rvl_zhuyin
     reset: 1
   - name: gb2312
     reset: 0
@@ -45,6 +46,7 @@ engine:
   filters:
     - charset_filter@gb2312  
     - simplifier
+    - lua_filter@single_char
     - "reverse_lookup_filter@ci_reverse_lookup"
     - lua_filter@new_spelling@spelling
     - lua_filter@single_char
@@ -52,6 +54,8 @@ engine:
     - uniquifier
   processors:
     - ascii_composer
+    - lua_processor@submit_text_processor
+    - lua_processor@switch_processor
     - recognizer
     - key_binder
     - speller
@@ -63,6 +67,7 @@ engine:
     - ascii_segmentor
     - matcher
     - "affix_segmentor@mkst"
+    - "affix_segmentor@rvl_zhuyin"
     - "affix_segmentor@rvlk1"
     - "affix_segmentor@zhuyin_fix"
     - abc_segmentor
@@ -75,7 +80,8 @@ engine:
     - table_translator
     - "table_translator@fixed"
     - "table_translator@mkst"
-    - "table_translator@zhuyin_fix"
+    #- "table_translator@zhuyin_fix"
+    - "table_translator@rvl_zhuyin"
     - "history_translator@history"
     - "lua_translator@helper"
     - "lua_translator@time_date"
@@ -104,7 +110,7 @@ fixed:
   initial_quality: 1000
   enable_encoder: true
   enable_user_dict: true
-  
+  encode_commit_history: false
 mkst:
   __include: /translator
   initial_quality: 10
@@ -112,7 +118,13 @@ mkst:
   prefix: '`'
   tips: "〔精准造词〕"
   tag: mkst
-
+rvl_zhuyin:
+  __include: /translator
+  initial_quality: 10
+  enable_sentence: true
+  prefix: '~'
+  tips: "〔以形查音〕"
+  tag: zhuyin
 reverse_lookup:
   __include: /translator
   dictionary: py
@@ -186,6 +198,18 @@ history:
 
 key_binder:
   bindings: 
+    - {send: Up, accept: Left, when: has_menu}
+    - {send: Down, accept: Right, when: has_menu}
+    - {send: Page_Up, accept: minus, when: has_menu}
+    - {send: Page_Down, accept: equal, when: has_menu}
+    - {send: Escape, accept: space, when: composing}
+    - {send: space, accept: space, when: has_menu}
+    - {toggle: zh_trad, accept: "Control+Shift+4", when: always}
+    - {toggle: zh_trad, accept: "Control+Shift+dollar", when: always}
+    - {toggle: zh_trad, accept: "Control+Shift+F", when: always}
+    - {toggle: new_spelling, accept: "Control+Shift+H", when: always}
+    - {toggle: new_hide_pinyin, accept: "Control+Shift+J", when: always}
+    - {toggle: single_char, accept: "Control+Shift+K", when: always}
     - {accept: semicolon, send: 2, when: has_menu}
     - {accept: apostrophe, send: 3, when: has_menu}
     - {accept: space, send: Escape, when: composing}

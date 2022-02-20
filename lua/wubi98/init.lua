@@ -7,29 +7,75 @@
 --  translators:
 --      - "lua_translator@time_date"
 -----------------------------------
-rv_var={ week_var="week",date_var="date",nl_var="nl",time_var="time",jq_var="jq"}	--日期编码关键字修改
+
+-- --=========================================================;关键字修改--==========================================================
+-- --==========================================================--==========================================================
+rv_var={ week_var="week",date_var="date",nl_var="nl",time_var="time",jq_var="jq",switch_keyword="next",help="help",switch_schema="mode"}	-- 编码关键字修改
+trad_keyword="zh_trad"		-- 简繁切换switcher参数
+single_keyword="single_char"	-- 单字过滤switcher参数
+spelling_keyword="new_spelling"	-- 拆分switcher参数
+candidate_keywords={{"简繁","簡繁",trad_keyword},{"拆分","拆分",spelling_keyword},{"GB2312过滤","GB2312過濾","gb2312"},{"单字模式","單字模式",single_keyword}} 	-- 活动开关项关键字
+-- --==========================================================--==========================================================
+-- --==========================================================--==========================================================
 new_spelling = local_require("new_spelling")
 submit_text_processor = local_require("Submit_text")
 helper = local_require("helper")
+switch_processor = local_require("switcher")
 local_require("lunarDate")
 local_require("lunarJq")
 local_require("lunarGz")
 local_require("number")
-
 -- --=========================================================;获取Rime程序目录/用户目录/同步目录路径===========================
 -- --==========================================================98资源库http://98wb.ys168.com/===============================
 function GetRimeAllDir()
-    --local sync_dir=rime_api.get_sync_dir()         -- 获取同步资料目录
+	local sync_dir=rime_api.get_sync_dir()         -- 获取同步资料目录
 	-- local rime_version=rime_api.get_rime_version()         -- 获取rime版本号macos无效
-    --local shared_data_dir=rime_api.get_shared_data_dir()         -- 获取程序目录data路径
-    --local user_data_dir=rime_api.get_user_data_dir()         -- 获取用户目录路径
+	local shared_data_dir=rime_api.get_shared_data_dir()         -- 获取程序目录data路径
+	local user_data_dir=rime_api.get_user_data_dir()         -- 获取用户目录路径
 	return {sync_dir=sync_dir or ""
 		,rime_version=rime_version or ""
 		,shared_data_dir=shared_data_dir or ""
 		,user_data_dir=user_data_dir or ""}
 end
 
+local function get_schema_name(schema_id)
+	local user_data_dir=rime_api.get_user_data_dir()         -- 获取用户目录路径
+	local schema_name=""
+	if user_data_dir:find("/") then user_data_dir=user_data_dir.."/"..schema_id..".schema.yaml" else user_data_dir=user_data_dir.."\\"..schema_id..".schema.yaml" end
+	local file = io.open(user_data_dir, "rb")
+	if file then
+		for line in file:lines() do
+			local m,n=line:match("(%s*name%:%s)%s*%p*([^%c%s]+)%p*")
+			if m and n then
+				return n:gsub("[']+$",""):gsub('["]+$','')
+			end
+		end
+		file:close()
+		return schema_name
+	end
+	return schema_name
+end
+
+local function get_schema_list()
+	local user_data_dir=rime_api.get_user_data_dir()
+	if user_data_dir:find("/") then user_data_dir=user_data_dir.."/build/default.yaml" else user_data_dir=user_data_dir.."\\build\\default.yaml" end
+	local file = io.open(user_data_dir, "rb")
+	if file then
+		local schema_list={}
+		for line in file:lines() do
+			local m,n=line:match("(%-%s*schema%:%s)([^%c%s]+)")
+			if m and n then
+				local name=get_schema_name(n)
+				if name~="" then table.insert(schema_list,{n,name}) end
+			end
+		end
+		file:close()
+		return schema_list
+	end
+end
+
 rime_dirs=GetRimeAllDir() RimeDefalutDir=""
+enable_schema_list=get_schema_list()
 debug_path=debug.getinfo(1,"S").source:sub(2):sub(1,-10)
 if rime_dirs.shared_data_dir==debug_path then
 	RimeDefalutDir=rime_dirs.shared_data_dir
@@ -134,11 +180,9 @@ function formatRimeDir(FilePath,dirName)
 end
 
 luaDefalutDir=formatRimeDir(RimeDefalutDir,"lua") -- 设置lua脚本文件读取全局默认路径为data\lua目录
-luaDefalutDir=formatRimeDir(luaDefalutDir,"wubi98") -- 设置lua脚本文件读取全局默认路径为data\lua目录
 local hotstring_obj=FormatFileContent(luaDefalutDir.."hotstring.txt")  -- 读取hotstring.txt内容并格式化为所需数据格式
--- print(hotstring_obj["bjy"][1][1].."\t"..hotstring_obj["bjy"][1][2])
--- io.open(luapath,"w"):write("123"):close()
 -- --====================================================================================================================
+--====================================================================================================================
 function RunScript(cmd, raw) 
 	local f = assert(io.popen(cmd, 'r')) 
 	-- wait(10000); 
@@ -160,6 +204,7 @@ function RunCapture(filepath)
 	end
 	return 0
 end
+--===================================================时间／日期／农历／历法／数字转换输出=================================================================
 -- --====================================================================================================================
 function CnDate_translator(y)
 	 local t,cstr,t2,t1
@@ -199,7 +244,7 @@ local format_week= function(n)
 	local obj={"日","一","二","三","四","五","六"}
 	if tonumber(n)==1 then return "周"..obj[os.date("%w")+1] else return "星期"..obj[os.date("%w")+1] end
 end
--------------------------------------------------------------
+------------------------lua内置日期变量参考-------------------------------------
 --[[
 	--%a 星期简称，如Wed	%A 星期全称，如Wednesday
 	--%b 月份简称，如Sep	%B 月份全称，如September
@@ -218,12 +263,13 @@ end
 --]]
 ----------------------------------------------------------------
 
---公历日期
+-- 公历日期
 function date_translator(input, seg)
-	local keyword = rv_var["date_var"]	--更多格式添加于dates之中
+	local keyword = rv_var["date_var"]
 	if (input == keyword) then
 		 local dates = {
-			os.date("%Y-%m-%d 第%W周")
+			os.date("%Y-%m-%d")
+			,os.date("%Y-%m-%d 第%W周")
 			,os.date("%Y年%m月%d日")
 			,CnDate_translator(os.date("%Y%m%d"))
 			,os.date("%Y-%m-%d｜%j/" .. IsLeap(os.date("%Y")))
@@ -236,9 +282,9 @@ function date_translator(input, seg)
 	end
 end
 
---公历时间
+-- 公历时间
 function time_translator(input, seg)
-	local keyword = rv_var["time_var"]	--更多格式添加于times之中
+	local keyword = rv_var["time_var"]
 	if (input == keyword) then
 		local times = {
 			os.date("%H:%M:%S")
@@ -251,9 +297,9 @@ function time_translator(input, seg)
 	end
 end
 
---农历日期
+-- 农历日期
 function lunar_translator(input, seg)
-	local keyword = rv_var["nl_var"]	--更多格式添加于lunar之中
+	local keyword = rv_var["nl_var"]
 	if (input == keyword) then
 		local lunar = {
 				{Date2LunarDate(os.date("%Y%m%d")) .. JQtest(os.date("%Y%m%d")),"〔公历⇉农历〕"}
@@ -296,18 +342,11 @@ local function QueryLunarInfo(date)
 	return result
 end
 
---[[ ---------------测试----------------
-local n=QueryLunarInfo(199105)
-for i=1,#n do
-	print(n[i][1]..n[i][2])
-end
---]] ----------------------------------
-
 -- 农历查询
 function QueryLunar_translator(input, seg)	--以任意大写字母开头引导反查农历日期，日期位数不足会以当前日期补全。
 	local str,lunar
 	if string.match(input,"^(%u+%d+)$")~=nil then
-		str = input:gsub("^(%a+)", "")
+		str = string.gsub(input,"^(%a+)", "")
 		if string.match(str,"^(20)%d%d+$")~=nil or string.match(str,"^(19)%d%d+$")~=nil then
 			lunar=QueryLunarInfo(str)
 			if #lunar>0 then
@@ -319,19 +358,20 @@ function QueryLunar_translator(input, seg)	--以任意大写字母开头引导�
 	end
 end
 
---- single_char
+--- 单字模式
 function single_char(input, env)
-	b = env.engine.context:get_option("single_char")
+	local b = env.engine.context:get_option(single_keyword)
+	local input_text = env.engine.context.input
 	for cand in input:iter() do
-		if (not b or utf8.len(cand.text) == 1 or cand.type == "qsj" or cand.type == "time" or cand.type == "date" or cand.type == "help" or cand.type == "nl") then
+		if (not b or utf8.len(cand.text) == 1 or table.vIn(rv_var, input_text) or input_text:find("^z") or input_text:find("^[%u%p]")) then
 			yield(cand)
 		end
 	end
 end
 
---星期
+-- 星期
 function week_translator(input, seg)
-	local keyword = rv_var["week_var"]	--更多格式添加于weeks之中
+	local keyword = rv_var["week_var"]
 	-- local luapath=debug.getinfo(1,"S").source:sub(2):sub(1,-9)   -- luapath.."lua\\user.txt"
 	if (input == keyword) then
 		local weeks = {
@@ -347,10 +387,9 @@ end
 
 --列出当年余下的节气
 function Jq_translator(input, seg)
-	local keyword ,jqs
-	keyword = rv_var["jq_var"]
+	local keyword = rv_var["jq_var"]
 	if (input == keyword) then
-		jqs = GetNowTimeJq(os.date("%Y%m%d"))
+		local jqs = GetNowTimeJq(os.date("%Y%m%d"))
 		for i =1,#jqs do
 			yield(Candidate(keyword, seg.start, seg._end, jqs[i], "〔节气〕"))
 		end
@@ -360,7 +399,7 @@ end
 
 -------------------------------------------------------------
 --[[
-	文件lua\hotstring.txt可以自己编辑，也可以用工具编辑，工具98资源库下载http://98wb.ys168.com/ 「小狼毫98五笔版辅助工具x64.exe」
+	文件lua\hotstring.txt可以自己编辑，也可以用工具编辑，工具98资源库下载http://98wb.ys168.com/ 「小狼毫助手.exe」
 	hotstring.txt文件格式：
 			编码+tab+内容+tab+注解
 		或
@@ -372,7 +411,7 @@ end
 function longstring_translator(input, seg)	--编码为小写字母开头为过滤条件为"^(%l+%a+)" 以/开头的"^(%l+)"改为"^/"，编码为大写字母开头改为"^(%u+%a+)"，不分大小写为"^(%a+)"
 	local str,m,strings
 	if string.match(input,"^(%u+%a+)")~=nil then
-		str = input:gsub("^/", "")
+		str = string.gsub(input,"^/", "")
 		if type(hotstring_obj)== "table" then
 				strings=hotstring_obj[str:lower(str)]
 				if type(strings)== "table" then
@@ -385,10 +424,10 @@ function longstring_translator(input, seg)	--编码为小写字母开头为过�
 	end
 end
 
-function number_translator(input,seg)
+function number_translator(input, seg)
 	local str,num,numberPart
 	if string.match(input,"^(%u+%d+)(%.?)(%d*)$")~=nil then
-		str = input:gsub("^(%a+)", "")  numberPart=number_translatorFunc(str)
+		str = string.gsub(input,"^(%a+)", "")  numberPart=number_translatorFunc(str)
 		if #numberPart>0 then
 			for i=1,#numberPart do
 				yield(Candidate(input, seg.start, seg._end, numberPart[i][1],numberPart[i][2]))
@@ -397,8 +436,45 @@ function number_translator(input,seg)
 	end
 end
 
---- time/date/week/nl
-function time_date(input, seg)
+local function set_switch_keywords(input, seg,env)
+	local schema = env.engine.schema
+	local config = env.engine.schema.config
+	local schema_name=env.engine.schema.schema_name or ""
+	local schema_id=env.engine.schema.schema_id or ""
+	local composition = env.engine.context.composition
+	local segment = composition:back()
+	local trad_mode=env.engine.context:get_option(trad_keyword)
+
+	if input == rv_var.switch_keyword and #candidate_keywords>0 or input == rv_var.switch_schema and #enable_schema_list>0 and trad_mode then
+		if schema_name then segment.prompt =" 〔 当前方案："..schema_name.." 〕" end
+		local cand =nil
+		local seg_text=""
+		for i =1,#candidate_keywords do
+			if trad_mode then seg_text=candidate_keywords[i][2] else seg_text=candidate_keywords[i][1] end
+			if env.engine.context:get_option(candidate_keywords[i][3]) then
+				cand = Candidate(input, seg.start, seg._end, seg_text,"  True")
+			else
+				cand = Candidate(input, seg.start, seg._end, seg_text,"  False")
+			end
+			cand.quality=100000000
+			yield(cand)
+		end
+	elseif input == rv_var.switch_schema and #enable_schema_list>0 and not trad_mode then
+		local select_index=1
+		for i =1,#enable_schema_list do
+			if enable_schema_list[i][2] then
+				local comment=""
+				if enable_schema_list[i][1]==schema_id then comment="  💡" select_index=i-1 end
+				local cand = Candidate(input, seg.start, seg._end, enable_schema_list[i][2],comment)
+				segment.selected_index=select_index
+				cand.quality=100000000
+				yield(cand)
+			end
+		end
+	end
+end
+
+function time_date(input, seg,env)
 	date_translator(input, seg)
 	time_translator(input, seg)
 	week_translator(input, seg)
@@ -406,5 +482,6 @@ function time_date(input, seg)
 	Jq_translator(input, seg)
 	longstring_translator(input, seg)
 	QueryLunar_translator(input, seg)
-	number_translator(input,seg)
+	number_translator(input, seg)
+	set_switch_keywords(input, seg,env)
 end
