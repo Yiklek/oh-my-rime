@@ -1,4 +1,5 @@
-﻿local basic = require('lib/basic')
+﻿local local_require = require('util').get_local_require("wubi98")
+local basic = local_require('lib/basic')
 local map = basic.map
 local index = basic.index
 local utf8chars = basic.utf8chars
