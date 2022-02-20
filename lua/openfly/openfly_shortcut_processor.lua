@@ -27,7 +27,8 @@ local command = {
     ["ogj"] = {'open "' .. user_path .. '"'},
     ["ojs"] = {'open -a Calculator.app'},
     ["owd"] = {'open -a "Microsoft Word.app"'},
-  }
+  },
+  ["iOS"] = {},
 }
 local option = {
   ["oei"] = {
@@ -57,8 +58,8 @@ end
 local function processor(key, env)
   restore_saved_options(key, env)
   local context = env.engine.context
-  local sys = common.detect_os()
   if key:release() or key:alt() then return common.kNoop end
+  local sys = common.detect_os()
   local index = common.select_index(env, key)
   if index < 0 then return common.kNoop end
   if command[sys][context.input] ~= nil then
