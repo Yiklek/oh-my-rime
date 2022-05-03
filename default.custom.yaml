@@ -12,6 +12,7 @@ patch:
     - {schema: wubi98_U}
     - {schema: wb_spelling}
     - {schema: py}
+    - {schema: wubi98_openfly_extra}
 
 #
 # 可用的按键有 Caps_Lock, Shift_L, Shift_R, Control_L, control_R
