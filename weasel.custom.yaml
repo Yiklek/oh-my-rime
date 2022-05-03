@@ -1,4 +1,4 @@
-﻿customization:
+customization:
   distribution_code_name: Weasel
   distribution_version: 0.14.3
   generator: "Weasel::UIStyleSettings"
@@ -36,3 +36,4 @@ patch:
   "style/layout/round_corner": 0
   "style/layout/spacing": 10
   "style/window/@0/move": ""
+
