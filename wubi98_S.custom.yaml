@@ -1,11 +1,5 @@
 patch:
   "style/font_face:": "98WB-2"
-  "style/text_orientation": horizontal
-  "style/fullscreen": false
-  "style/inline_preedit": false
-#  "style/preedit_type": composition
-  "style/horizontal": true
-  "style/font_point": 12
   "translator/enable_completion": true
   "key_binder/import_preset": default
 
