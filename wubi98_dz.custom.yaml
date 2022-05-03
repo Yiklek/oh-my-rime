@@ -3,3 +3,4 @@ patch:
   "style/font_face": "98WB-2"
   "translator/enable_completion": true
   "key_binder/import_preset": default
+  "reverse_lookup/dictionary": openfly
