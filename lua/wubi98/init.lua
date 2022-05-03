@@ -10,14 +10,17 @@
 
 -- --=========================================================;关键字修改--==========================================================
 -- --==========================================================--==========================================================
-rv_var={ week_var="week",date_var="date",nl_var="nl",time_var="time",jq_var="jq",switch_keyword="next",help="help",switch_schema="mode"}	-- 编码关键字修改
+rv_var={ week_var="week",date_var="date",nl_var="nlnl",time_var="time",jq_var="jqjq",switch_keyword="next",help="help",switch_schema="mode"}	-- 编码关键字修改
 trad_keyword="zh_trad"		-- 简繁切换switcher参数
 single_keyword="single_char"	-- 单字过滤switcher参数
 spelling_keyword="new_spelling"	-- 拆分switcher参数
-candidate_keywords={{"简繁","簡繁",trad_keyword},{"拆分","拆分",spelling_keyword},{"GB2312过滤","GB2312過濾","gb2312"},{"单字模式","單字模式",single_keyword}} 	-- 活动开关项关键字
+GB2312_keyword="GB2312"	-- GB2312开关switcher参数
+candidate_keywords={{"简繁","簡繁",trad_keyword},{"拆分","拆分",spelling_keyword},{"GB2312过滤","GB2312過濾",GB2312_keyword},{"单字模式","單字模式",single_keyword}} 	-- 活动开关项关键字
 -- --==========================================================--==========================================================
 -- --==========================================================--==========================================================
+-- 拆分数据匹配
 new_spelling = local_require("new_spelling")
+-- 监控并记录精准造词至文件等，必须配置lua_processor@submit_text_processor
 submit_text_processor = local_require("Submit_text")
 helper = local_require("helper")
 switch_processor = local_require("switcher")
@@ -83,6 +86,16 @@ elseif rime_dirs.user_data_dir==debug_path then
 	RimeDefalutDir=rime_dirs.user_data_dir
 else
 	RimeDefalutDir=debug_path
+end
+-- --=========================================================精准造词文件存放路径===========================================================
+-- 精准造词文件存放路径
+userphrasepath=""
+if RimeDefalutDir~="" then
+	if RimeDefalutDir:find("\\") then
+		userphrasepath=RimeDefalutDir.."\\userphrase.txt"
+	elseif RimeDefalutDir:find("/") then
+		userphrasepath=RimeDefalutDir.."/userphrase.txt"
+	end
 end
 -- --=========================================================读取lua目录下hotstring.txt文件===========================================================
 -- --======================================================格式：编码+Tab+字符串+Tab+字符串说明========================================================
@@ -452,9 +465,9 @@ local function set_switch_keywords(input, seg,env)
 		for i =1,#candidate_keywords do
 			if trad_mode then seg_text=candidate_keywords[i][2] else seg_text=candidate_keywords[i][1] end
 			if env.engine.context:get_option(candidate_keywords[i][3]) then
-				cand = Candidate(input, seg.start, seg._end, seg_text,"  True")
+				cand = Candidate(input, seg.start, seg._end, seg_text,"  ✓")
 			else
-				cand = Candidate(input, seg.start, seg._end, seg_text,"  False")
+				cand = Candidate(input, seg.start, seg._end, seg_text,"  ✕")
 			end
 			cand.quality=100000000
 			yield(cand)
@@ -464,7 +477,7 @@ local function set_switch_keywords(input, seg,env)
 		for i =1,#enable_schema_list do
 			if enable_schema_list[i][2] then
 				local comment=""
-				if enable_schema_list[i][1]==schema_id then comment="  💡" select_index=i-1 end
+				if enable_schema_list[i][1]==schema_id then comment="  ☚" select_index=i-1 end
 				local cand = Candidate(input, seg.start, seg._end, enable_schema_list[i][2],comment)
 				segment.selected_index=select_index
 				cand.quality=100000000

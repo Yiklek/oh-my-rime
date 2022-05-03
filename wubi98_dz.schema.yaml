@@ -14,7 +14,6 @@ schema:
   dependencies:
     - py
 
-
 switches:
   - name: ascii_mode
     reset: 0
@@ -27,7 +26,7 @@ switches:
   #- name: jiayin
   - name: rvl_zhuyin
     reset: 1
-  - name: gb2312
+  - name: GB2312
     reset: 0
     states: [ 扩,常 ]
   - name: new_hide_pinyin
@@ -182,8 +181,8 @@ recognizer:
     email: "^[A-Za-z][-_.0-9A-Za-z]*@.*$"
     mkst: "^[a-y]*`[a-y`]*$"
     punct: "^/([0-9]0?|[A-Za-z]+)$"
-    rvlk1: "^z[a-z]*'?$"
-    rvlk2: "^z[a-z]*'?$"
+    rvlk1: "^z[a-z]*$"
+    rvlk2: "^z[a-z]*$"
     uppercase: "[A-Z][-_+.'0-9A-Za-z]*$"
     url: "^(www[.]|https?:|ftp[.:]|mailto:|file:).*$|^[a-z]+[.].+$"
     #zhuyin_fix: "~[a-y]*?$"
@@ -216,9 +215,9 @@ key_binder:
     - {accept: "Control+Shift+H", toggle: new_spelling, when: always}
     - {accept: "Control+Shift+J", toggle: new_hide_pinyin, when: always} 
     - {accept: "Control+Shift+K", toggle: single_char, when: always}
-    - {accept: "Control+Shift+U", toggle: gb2312, when: always} 
-    - {accept: "Control+Shift+I", toggle: gb2312, when: always} 
-    - {accept: "Control+Shift+O", toggle: gb2312, when: always}
+    - {accept: "Control+Shift+U", toggle: GB2312, when: always} 
+    - {accept: "Control+Shift+I", toggle: GB2312, when: always} 
+    - {accept: "Control+Shift+O", toggle: GB2312, when: always}
 
 punctuator:
   import_preset: symbols

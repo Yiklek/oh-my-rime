@@ -14,7 +14,6 @@ schema:
   dependencies:
     - py
 
-
 switches:
   - name: ascii_mode
     reset: 0
@@ -24,10 +23,9 @@ switches:
   - name: new_spelling
     reset: 1
     states: [ 隐,显 ]
-  #- name: jiayin
   - name: rvl_zhuyin
     reset: 1
-  - name: gb2312
+  - name: GB2312
     reset: 0
     states: [ 扩,常 ]
   - name: new_hide_pinyin
@@ -44,13 +42,13 @@ switches:
     states: [ 半, 全 ]
 engine:
   filters:
-    - charset_filter@gb2312  
+    # - charset_filter@gb2312
     - simplifier
     - lua_filter@single_char
     - "reverse_lookup_filter@ci_reverse_lookup"
     - lua_filter@new_spelling@spelling
-    - lua_filter@single_char
-    - "simplifier@jiayin"
+    # - lua_filter@single_char
+    # - "simplifier@jiayin"
     - uniquifier
   processors:
     - ascii_composer
@@ -69,7 +67,7 @@ engine:
     - "affix_segmentor@mkst"
     - "affix_segmentor@rvl_zhuyin"
     - "affix_segmentor@rvlk1"
-    - "affix_segmentor@zhuyin_fix"
+    # - "affix_segmentor@zhuyin_fix"
     - abc_segmentor
     - punct_segmentor
     - fallback_segmentor
@@ -90,15 +88,15 @@ speller:
   auto_clear: max_length
   delimiter: "`"
   max_code_length: 4
-  
+
 translator:
   dictionary: wubi98_ci.extended
   db_class: tabledb
   initial_quality: 100000
-  enable_charset_filter: false
-  enable_sentence: false
   enable_encoder: true
   encode_commit_history: true
+  enable_encoder: false
+  encode_commit_history: false
   max_phrase_length: 4
   enable_completion: false
   enable_user_dict: false
@@ -134,20 +132,20 @@ reverse_lookup:
     - xform/([nl])ue/$1üe/
     - xform/([jqxy])v/$1u/
   tag: rvlk2
-    
+
 rvlk1:
   __include: /reverse_lookup
   prefix: "z"
   tag: rvlk1
   extra_tags:
-    - rvlk2  
-    
+    - rvlk2
+
 ci_reverse_lookup:
   dictionary: wubi98_ci.extended
   tips: "〔五笔滤镜〕"
   tags:
     - rvlk2
-    
+
 zhuyin_fix:
   __include: /translator
   prefix: '~'
@@ -173,7 +171,7 @@ jiayin:
   tags:
 #   - abc
     - zhuyin_fix
-  tips: all 
+  tips: all
 
 recognizer:
   import_preset: default
@@ -181,23 +179,24 @@ recognizer:
     email: "^[A-Za-z][-_.0-9A-Za-z]*@.*$"
     mkst: "^[a-y]*`[a-y`]*$"
     punct: "^/([0-9]0?|[A-Za-z]+)$"
-    rvlk1: "^z[a-z]*'?$"
-    rvlk2: "^z[a-z]*'?$"
+    rvlk1: "^z[a-z]*$"
+    rvlk2: "^z[a-z]*$"
     uppercase: "[A-Z][-_+.'0-9A-Za-z]*$"
     url: "^(www[.]|https?:|ftp[.:]|mailto:|file:).*$|^[a-z]+[.].+$"
     zhuyin_fix: "~[a-y]*?$"
+    zhuyin: "~[a-y]*?$"
     helper: '^help$'
 charset_filter:
   option_name: gb2312
-  
+
 history:
   input: z
   size: 1
   initial_quality: 1
-  
+
 
 key_binder:
-  bindings: 
+  bindings:
     - {send: Up, accept: Left, when: has_menu}
     - {send: Down, accept: Right, when: has_menu}
     - {send: Page_Up, accept: minus, when: has_menu}
@@ -220,14 +219,14 @@ key_binder:
     - {accept: "Control+Shift+dollar", toggle: zh_trad, when: always}
     - {accept: "Control+Shift+F", toggle: zh_trad, when: always}
     - {accept: "Control+Shift+H", toggle: new_spelling, when: always}
-    - {accept: "Control+Shift+J", toggle: new_hide_pinyin, when: always} 
+    - {accept: "Control+Shift+J", toggle: new_hide_pinyin, when: always}
     - {accept: "Control+Shift+K", toggle: single_char, when: always}
-    - {accept: "Control+Shift+U", toggle: gb2312, when: always} 
-    - {accept: "Control+Shift+I", toggle: gb2312, when: always} 
-    - {accept: "Control+Shift+O", toggle: gb2312, when: always}
+    - {accept: "Control+Shift+U", toggle: GB2312, when: always}
+    - {accept: "Control+Shift+I", toggle: GB2312, when: always}
+    - {accept: "Control+Shift+O", toggle: GB2312, when: always}
 
 punctuator:
   import_preset: symbols
-  
+
 menu:
-  page_size: 9  
+  page_size: 9

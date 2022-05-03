@@ -63,7 +63,7 @@ function number2cnChar(num,flag,digitUnit,wordFigure)    --flag=0中文小写反
 		if tonumber(flag) < 1 then
 			digitUnit = digitUnit or {[1]="万";[2]="亿"}  wordFigure = wordFigure or {[1]="〇"; [2]="一"; [3]="十"; [4]="元"}
 		else
-			digitUnit = digitUnit or {[1]="萬";[2]="億"}  wordFigure = wordFigure or {[1]="零"; [2]="壹"; [3]="拾"; [4]="圆"}
+			digitUnit = digitUnit or {[1]="万";[2]="亿"}  wordFigure = wordFigure or {[1]="零"; [2]="壹"; [3]="拾"; [4]="元"}
 		end
 		local lens=string.len(num1)
 		if lens<5 then result=formatNum(num1,flag) elseif lens<9 then result=formatNum(string.sub(num1,1,-5),flag) .. digitUnit[1].. formatNum(string.sub(num1,-4,-1),flag)

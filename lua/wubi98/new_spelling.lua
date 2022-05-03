@@ -75,6 +75,11 @@ local function parse_spll(str)
 	return string.gsub(s, '^%[', '')
 end
 
+local function parse_encode(str)
+	local s = string.gsub(str, '%[(.-),(.-),(.-),(.-)%]', '[%2]')
+	return string.gsub(s, '^%[', '')
+end
+
 local function spell_phrase(s, spll_rvdb)
 	local chars = utf8chars(s)
 	local rvlk_results
@@ -105,6 +110,60 @@ local function spell_phrase(s, spll_rvdb)
 	end
 end
 
+local function isgb2312(cand, env)
+	local ctext = cand.text
+	if utf8.len(ctext) == 1 then
+		local spll_raw = env.spll_rvdb:lookup(ctext)
+		if spll_raw ~= '' then
+			local chars =xform(spll_raw:gsub('%[(.-),(.-),(.-),(.-)%]', '[%4]'))
+			if chars:find("GB2312") then return 1 else return 0 end
+		else
+			return 1
+		end
+	elseif utf8.len(ctext)>1 then
+		local arr = utf8chars(ctext)
+		local flag=1
+		for i =1,#arr do
+			local spll_raw = env.spll_rvdb:lookup(arr[i])
+			if spll_raw ~= '' then
+				local chars =xform(spll_raw:gsub('%[(.-),(.-),(.-),(.-)%]', '[%4]'))
+				if chars:find("GBK") then return 0 else flag=1 end
+			end
+		end
+
+		return flag
+	end
+end
+
+local function get_en_code(s, spll_rvdb)
+	local chars = utf8chars(s)
+	local rvlk_results
+	if #chars == 2 or #chars == 3 or #chars == 1 then
+		rvlk_results = map(chars, lookup(spll_rvdb))
+	else
+		rvlk_results = map({chars[1], chars[2], chars[3], chars[#chars]},
+				lookup(spll_rvdb))
+	end
+	if index(rvlk_results, '') then return '' end
+	local spellings = map(rvlk_results, parse_encode)
+	local sup = '◇'
+	if #chars == 1 then
+		return spellings[1]:gsub('[^%a]+','')
+	elseif #chars == 2 then
+		return spellings[1]:gsub('[^%a]+',''):sub(1,2) ..
+			spellings[2]:gsub('[^%a]+',''):sub(1,2)
+	elseif #chars == 3 then
+		return spellings[1]:gsub('[^%a]+',''):sub(1,1) ..
+			spellings[2]:gsub('[^%a]+',''):sub(1,1) ..
+			spellings[3]:gsub('[^%a]+',''):sub(1,2)
+	else
+		return spellings[1]:gsub('[^%a]+',''):sub(1,1) ..
+			spellings[2]:gsub('[^%a]+',''):sub(1,1) ..
+			spellings[3]:gsub('[^%a]+',''):sub(1,1) ..
+			spellings[4]:gsub('[^%a]+',''):sub(1,1)
+	end
+end
+
 local function get_tricomment(cand, env)
 	local ctext = cand.text
 	if utf8.len(ctext) == 1 then
@@ -114,7 +173,7 @@ local function get_tricomment(cand, env)
 			-- return xform(spll_raw:gsub('%[(.-,.-),.+%]', '[%1]'))
 				 return xform(spll_raw:gsub('%[(.-),.+%]', '[%1]'))
 			else
-				return xform(spll_raw)
+				return xform(spll_raw:gsub('%[(.-),(.-),(.-),(.-)%]', '[%1'..' · '..'%2'..' · '..'%3]'))
 			end
 		end
 	else
@@ -184,11 +243,11 @@ local function filter(input, env)
 	local schema_name=env.engine.schema.schema_name or ""
 	local schema_id=env.engine.schema.schema_id or ""
 	local spelling_states=env.engine.context:get_option(spelling_keyword)
-	-- local composition = env.engine.context.composition
-	-- local segment = composition:back()
+	local composition = env.engine.context.composition
+	local segment = composition:back()
 	-- if codetext==rv_var.switch_keyword and schema_name then segment.prompt =" 〔 当前方案："..schema_name.." 〕" end
 	-- 获取输入法常用参数
-	-- env.engine.context:get_commit_text() -- filter中为获取编码
+	-- env.engine.context:get_commit_text() -- filter中为获取提交词
 	-- env.engine.context:get_script_text()-- 获取编码带引导符
 	-- local caret_pos = env.engine.context.caret_pos          - 光标的位置通常可以理解为单字节编码长度
 	-- local schema = env.engine.schema.config:get_int('menu/page_size')         -- 获取方案候选项数目参数
@@ -203,101 +262,116 @@ local function filter(input, env)
 	CandidateText={}
 	if spelling_states then
 		for cand in input:iter() do
-			table.insert(CandidateText,cand.text)
-			if cand.type == 'simplifier' and env.name_space == 'new_for_rvlk' then
-				if cand.comment=="" then
-					local comment = get_tricomment(cand, env)
-					yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text, comment))
-				end
-			else
-				if script_text:find("^[a-z]*([%`])[a-z%`]*") and not script_text:find("%p$") or script_text:find("^z[a-z]*") and not script_text:find("%p$") or script_text:find("^([%/])[a-z]*") and not script_text:find("%p$") then
-					-- cand.quality=10  -- 调整权值 "💡"   cand.type:'reverse_lookup'
-					local add_comment=get_tricomment(cand, env)
-					local code_comment=env.code_rvdb:lookup(cand.text)
-					if add_comment~=nil or add_comment~="" then
-						if cand.comment == "" then
-							yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text,add_comment))
-						else
-							if cand.comment:find("☯") then
-								yield(cand)
-								-- yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text,add_comment .. cand.comment))
+			if isgb2312(cand,env)==1 and env.engine.context:get_option("GB2312") or not env.engine.context:get_option("GB2312") then
+				table.insert(CandidateText,cand.text)
+				if cand.type == 'simplifier' and env.name_space == 'new_for_rvlk' then
+					if cand.comment=="" then
+						local comment = get_tricomment(cand, env)
+						-- local rvlk_comment=
+						yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text, comment))
+					end
+				else
+					if script_text:find("^z[a-z]*") and not script_text:find("%p$") or script_text:find("^([%/])[a-z]*") and not script_text:find("%p$") then
+						-- cand.quality=10  -- 调整权值 "💡"   cand.type:'reverse_lookup'
+						local add_comment=get_tricomment(cand, env)
+						local code_comment=env.code_rvdb:lookup(cand.text)
+						if add_comment~=nil or add_comment~="" then
+							if cand.comment == "" then
+								yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text,add_comment))
 							else
-								if utf8.len(cand.text) == 1 and code_comment and not hide_pinyin then
-									yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text,xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '[%1'..' · '..'%2'..' · '..'%3]'))))
+								if cand.comment:find("(☯)") then
+									segment.prompt="〔编码："..get_en_code(cand.text, env.spll_rvdb).. "〕"
+									yield(cand)
 								else
-									yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text,add_comment:gsub("〕"," · ") .. cand.comment .. " 〕"))
+									if utf8.len(cand.text) == 1 and code_comment and not hide_pinyin then
+										yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text,xform(code_comment:gsub('%[(.-),(.-),(.-),(.-)%]', '[%1'..' · '..'%2'..' · '..'%3]'))))
+									else
+										yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text,add_comment:gsub("〕"," · ") .. cand.comment .. " 〕"))
+									end
 								end
 							end
 						end
-					end
-				elseif script_text:find("^([%~])[a-z]*") and not script_text:find("%p$") and env.engine.context:get_option("rvl_zhuyin") then
-					local code_comment=env.code_rvdb:lookup(cand.text)
-					if code_comment~="" then
-						code_comment=xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '[%3'..' · '..'%1]'))
-						yield(Candidate("rvl_zhuyin", cand.start, cand._end, cand.text,code_comment))
+					elseif script_text:find("^([%~])[a-z]*") and not script_text:find("%p$") and env.engine.context:get_option("rvl_zhuyin") then
+						local code_comment=env.code_rvdb:lookup(cand.text)
+						if code_comment~="" then
+							code_comment=xform(code_comment:gsub('%[(.-),(.-),(.-),(.-)%]', '[%3'..' · '..'%1]'))
+							yield(Candidate("rvl_zhuyin", cand.start, cand._end, cand.text,code_comment))
+						else
+							yield(cand)
+						end
+					-- elseif script_text==rv_var.switch_keyword then
+					-- 	if cand.text:find("方案") then cand.comment="〔 "..schema_name.." 〕" end
+					-- 	yield(cand)
 					else
+						local add_comment = ''
+						local code_comment=env.code_rvdb:lookup(cand.text)
+						if cand.comment:find("(☯)") and script_text:find("^%`*(%l+%`%l+)") then
+							segment.prompt="〔编码："..get_en_code(cand.text, env.spll_rvdb).. "〕"
+						end
+						if cand.type == 'punct' then
+							add_comment = xform(code_comment:gsub('%[(.-),(.-),(.-),(.-)%]', '[%1'..' · '..'%2'..' · '..'%3]'))
+						elseif cand.type ~= 'sentence' then
+							add_comment = get_tricomment(cand, env)
+						end
+						if add_comment ~= '' then
+							if cand.comment=="" then cand.comment = add_comment .. cand.comment end
+						end
 						yield(cand)
 					end
-				-- elseif script_text==rv_var.switch_keyword then
-				-- 	if cand.text:find("方案") then cand.comment="〔 "..schema_name.." 〕" end
-				-- 	yield(cand)
-				else
-					local add_comment = ''
-					local code_comment=env.code_rvdb:lookup(cand.text)
-					if cand.type == 'punct' then
-						add_comment = xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '[%1'..' · '..'%2'..' · '..'%3]'))
-					elseif cand.type ~= 'sentence' then
-						add_comment = get_tricomment(cand, env)
-					end
-					if add_comment ~= '' then
-						if cand.comment=="" then cand.comment = add_comment .. cand.comment end
-					end
-					yield(cand)
 				end
 			end
 		end
 	else
 		if script_text:find("^z") then
 			for cand in input:iter() do
-				table.insert(CandidateText,cand.text)
-				local add_comment=get_tricomment(cand, env)
-				local code_comment=env.code_rvdb:lookup(cand.text)
-				if cand.comment=="" then
-					if add_comment~=nil or add_comment~="" then
-						cand.comment = add_comment
-					end
-				elseif not horizontal:find("true") then
-					if add_comment~=nil or add_comment~="" then
-						if utf8.len(cand.text) == 1 and code_comment and not hide_pinyin then
-							cand.comment = xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '[%1'..' · '..'%2'..' · '..'%3]'))
-						elseif utf8.len(cand.text) == 1 and code_comment and hide_pinyin then
-							cand.comment = xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '[%1'..' · '..'%2]'))
-						else
-							cand.comment = add_comment:gsub("〕"," · ") .. cand.comment .. " 〕"
+				if isgb2312(cand,env)==1 and env.engine.context:get_option("GB2312") or not env.engine.context:get_option("GB2312") then
+					table.insert(CandidateText,cand.text)
+					local add_comment=get_tricomment(cand, env)
+					local code_comment=env.code_rvdb:lookup(cand.text)
+					if cand.comment=="" then
+						if add_comment~=nil or add_comment~="" then
+							cand.comment = add_comment
 						end
+					elseif not horizontal:find("true") then
+						if add_comment~=nil or add_comment~="" then
+							if utf8.len(cand.text) == 1 and code_comment and not hide_pinyin then
+								cand.comment = xform(code_comment:gsub('%[(.-),(.-),(.-),(.-)%]', '[%1'..' · '..'%2'..' · '..'%3]'))
+							elseif utf8.len(cand.text) == 1 and code_comment and hide_pinyin then
+								cand.comment = xform(code_comment:gsub('%[(.-),(.-),(.-),(.-)%]', '[%1'..' · '..'%2]'))
+							else
+								cand.comment = add_comment:gsub("〕"," · ") .. cand.comment .. " 〕"
+							end
+						end
+					else
+						if cand.comment:find("%s") then cand.comment=" "..cand.comment:gsub("%s+"," · ") else cand.comment=" "..cand.comment end
 					end
-				else
-					if cand.comment:find("%s") then cand.comment=" "..cand.comment:gsub("%s+"," · ") else cand.comment=" "..cand.comment end
+					yield(cand)
 				end
-				yield(cand)
 			end
 		elseif script_text:find("^([%~])[a-z]*") and not script_text:find("%p$") and env.engine.context:get_option("rvl_zhuyin") then
 			for cand in input:iter() do
-				table.insert(CandidateText,cand.text)
-				local code_comment=env.code_rvdb:lookup(cand.text)
-				if code_comment~="" then
-					code_comment=xform(code_comment:gsub('%[(.-),(.-),(.-)%]', '%3')):gsub("^%s+",""):gsub("%s+$","")
-					if code_comment:find("%s") then code_comment=code_comment:gsub("%s+"," · ") end
-					yield(Candidate("zhuyin_rvlk", cand.start, cand._end, cand.text," "..code_comment))
+				if isgb2312(cand,env)==1 and env.engine.context:get_option("GB2312") or not env.engine.context:get_option("GB2312") then
+					table.insert(CandidateText,cand.text)
+					local code_comment=env.code_rvdb:lookup(cand.text)
+					if code_comment~="" then
+						code_comment=xform(code_comment:gsub('%[(.-),(.-),(.-),(.-)%]', '%3')):gsub("^%s+",""):gsub("%s+$","")
+						if code_comment:find("%s") then code_comment=code_comment:gsub("%s+"," · ") end
+						yield(Candidate("zhuyin_rvlk", cand.start, cand._end, cand.text," "..code_comment))
+					end
 				end
 			end
 		else
 			for cand in input:iter() do
-				table.insert(CandidateText,cand.text)
-				-- if script_text==rv_var.switch_keyword then
-				-- 	if cand.text:find("方案") then cand.comment="〔 "..schema_name.." 〕" end
-				-- end
-				yield(cand)
+				if isgb2312(cand,env)==1 and env.engine.context:get_option("GB2312") or not env.engine.context:get_option("GB2312") then
+					table.insert(CandidateText,cand.text)
+					-- if script_text==rv_var.switch_keyword then
+					-- 	if cand.text:find("方案") then cand.comment="〔 "..schema_name.." 〕" end
+					-- end
+					if cand.comment:find("(☯)") and script_text:find("^%`*(%l+%`%l+)") then
+						segment.prompt ="〔编码："..get_en_code(cand.text, env.spll_rvdb).. "〕"
+					end
+					yield(cand)
+				end
 			end
 		end
 	end
