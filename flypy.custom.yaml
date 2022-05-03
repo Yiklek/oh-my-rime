@@ -1,5 +1,6 @@
-# encoding: utf-8
+﻿# encoding: utf-8
 patch:
+  "history/size": 5
   menu:
     page_size: 8 #候选项数
   "translator/enable_completion": true

@@ -1,7 +1,0 @@
-# Rime table
-#@/db_name	wubi98_dz
-#@/db_type	tabledb
-#@/rime_version	1.7.3
-#@/tick	2
-以	c	1
-可	sk	1

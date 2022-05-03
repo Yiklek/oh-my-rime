@@ -43,6 +43,10 @@ patch:
     - when: has_menu
       accept: period
       send: Page_Down
-
-
+    - when: composing
+      accept: Return
+      send: "Shift+Return"
+    - when: has_menu
+      accept: Return
+      send: "Shift+Return"
 

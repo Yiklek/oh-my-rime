@@ -1,4 +1,4 @@
-customization:
+﻿customization:
   distribution_code_name: Weasel
   distribution_version: 0.14.3
   generator: "Weasel::UIStyleSettings"
@@ -18,18 +18,19 @@ patch:
     label_color: 0x666666
     name: metro
     text_color: 0x000000
+
+  "style/horizontal": true
   "style/color_scheme": metro
   "style/display_tray_icon": false
   "style/font_point": 12
   "style/font_face": "98WB-2"
-  "style/horizontal": true
-  "style/inline_preedit": true
+  "style/inline_preedit": false
   "style/layout/border_width": 1
-  "style/layout/candidate_spacing": 30
-  "style/layout/hilite_padding": 12
+  "style/layout/candidate_spacing": 15
+  "style/layout/hilite_padding": 10
   "style/layout/hilite_spacing": 2
-  "style/layout/margin_x": 12
-  "style/layout/margin_y": 10
+  "style/layout/margin_x": 10
+  "style/layout/margin_y": 3
   "style/layout/min_height": 0
   "style/layout/min_width": 100
   "style/layout/round_corner": 0
