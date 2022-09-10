@@ -3,6 +3,32 @@ patch:
   "style/font_face": "98WB-2"
   "translator/enable_completion": true
   "key_binder/import_preset": default
+
   "reverse_lookup/enable_completion": true
-  "reverse_lookup/dictionary": wubi98_openfly_extra
+  # multiple reverse_lookup
   "schema/dependencies/@next": wubi98_openfly_extra
+  # reverse_lookup/dictionary must be null 
+  # for multiple reverse lookup table_translator
+  "reverse_lookup/dictionary": null
+  "rvlk1":
+    prefix: "z"
+    tag: rvlk1
+    extra_tags:
+      - rvlk2
+    dictionary: py
+    tips: "〔拼音反查〕"
+    auto_completion: true
+  rvlk_openfly:
+    prefix: "z,"
+    tips: "〔小鹤反查〕"
+    dictionary: wubi98_openfly_extra
+    auto_completion: true
+    tag: rvlk_openfly
+    extra_tags:
+      - rvlk2
+  "engine/segmentors/@after 4": affix_segmentor@rvlk_openfly
+  # actually reverse_lookup_translator is not required.
+  # do not modify it for complying with original schema.
+  "engine/translators/@after 3": table_translator@rvlk_openfly
+  "recognizer/patterns/+":
+    rvlk_openfly: "^z,[a-z]*$"
