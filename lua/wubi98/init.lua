@@ -24,13 +24,13 @@ new_spelling = local_require("new_spelling")
 submit_text_processor = local_require("Submit_text")
 helper = local_require("helper")
 switch_processor = local_require("switcher")
-local_require("lunarDate")
-local_require("lunarJq")
-local_require("lunarGz")
-local_require("number")
+local lunarDate = local_require("lunarDate")
+local lunarJq = local_require("lunarJq")
+local lunarGz = local_require("lunarGz")
+local number = local_require("number")
 -- --=========================================================;获取Rime程序目录/用户目录/同步目录路径===========================
 -- --==========================================================98资源库http://98wb.ys168.com/===============================
-function GetRimeAllDir()
+local function GetRimeAllDir()
 	local sync_dir=rime_api.get_sync_dir()         -- 获取同步资料目录
 	-- local rime_version=rime_api.get_rime_version()         -- 获取rime版本号macos无效
 	local shared_data_dir=rime_api.get_shared_data_dir()         -- 获取程序目录data路径
@@ -77,9 +77,10 @@ local function get_schema_list()
 	end
 end
 
-rime_dirs=GetRimeAllDir() RimeDefalutDir=""
+local rime_dirs=GetRimeAllDir() 
+local RimeDefalutDir=""
 enable_schema_list=get_schema_list()
-debug_path=debug.getinfo(1,"S").source:sub(2):sub(1,-10)
+local debug_path=debug.getinfo(1,"S").source:sub(2):sub(1,-10)
 if rime_dirs.shared_data_dir==debug_path then
 	RimeDefalutDir=rime_dirs.shared_data_dir
 elseif rime_dirs.user_data_dir==debug_path then
@@ -88,7 +89,7 @@ else
 	RimeDefalutDir=debug_path
 end
 -- --=========================================================精准造词文件存放路径===========================================================
--- 精准造词文件存放路径
+-- 精准造词文件存放路径 will export
 userphrasepath=""
 if RimeDefalutDir~="" then
 	if RimeDefalutDir:find("\\") then
@@ -99,7 +100,7 @@ if RimeDefalutDir~="" then
 end
 -- --=========================================================读取lua目录下hotstring.txt文件===========================================================
 -- --======================================================格式：编码+Tab+字符串+Tab+字符串说明========================================================
-function FileIsExist(name)
+local function FileIsExist(name)
 	local f=io.open(name,"r")
 	if f~=nil then io.close(f) return true else return false end
 end
@@ -160,7 +161,7 @@ end
 
 local function FormatFileContent(FilePath)   -- 格式化lua字符串函数
 	local hotstring_obj={}
-	file = io.open(FilePath,"r")
+	local file = io.open(FilePath,"r")
 	if file~=nil then
 		for line in file:lines() do
 			local tarr=splitCharPart(line)
@@ -178,7 +179,7 @@ local function FormatFileContent(FilePath)   -- 格式化lua字符串函数
 	return hotstring_obj
 end
 
-function formatRimeDir(FilePath,dirName)
+local function formatRimeDir(FilePath,dirName)
 	FilePath=FilePath or debug.getinfo(1,"S").source:sub(2):sub(1,-10)
 	if FilePath:find("\\") then
 		if dirName:find("/") then dirName=dirName:gsub("/","\\") end
@@ -192,11 +193,11 @@ function formatRimeDir(FilePath,dirName)
 	end
 end
 
-luaDefalutDir=formatRimeDir(RimeDefalutDir,"lua") -- 设置lua脚本文件读取全局默认路径为data\lua目录
+local luaDefalutDir=formatRimeDir(RimeDefalutDir,"lua") -- 设置lua脚本文件读取全局默认路径为data\lua目录
 local hotstring_obj=FormatFileContent(luaDefalutDir.."hotstring.txt")  -- 读取hotstring.txt内容并格式化为所需数据格式
 -- --====================================================================================================================
 --====================================================================================================================
-function RunScript(cmd, raw) 
+local function RunScript(cmd, raw) 
 	local f = assert(io.popen(cmd, 'r')) 
 	-- wait(10000); 
 	local s = assert(f:read('*a')) 
@@ -208,8 +209,8 @@ function RunScript(cmd, raw)
 	return s 
 end 
 
-function RunCapture(filepath)
-	file=io.open(filepath,"r")
+local function RunCapture(filepath)
+	local file=io.open(filepath,"r")
 	if file~=nil then
 		io.popen(filepath)
 		file.close(file)
@@ -219,7 +220,7 @@ function RunCapture(filepath)
 end
 --===================================================时间／日期／农历／历法／数字转换输出=================================================================
 -- --====================================================================================================================
-function CnDate_translator(y)
+local function CnDate_translator(y)
 	 local t,cstr,t2,t1
 	 cstr = {"〇","一","二","三","四","五","六","七","八","九"}  t=""  t1=tostring(y)
 	if t1.len(tostring(t1))~=8 then return t1 end
@@ -277,7 +278,7 @@ end
 ----------------------------------------------------------------
 
 -- 公历日期
-function date_translator(input, seg)
+local function date_translator(input, seg)
 	local keyword = rv_var["date_var"]
 	if (input == keyword) then
 		 local dates = {
@@ -296,7 +297,7 @@ function date_translator(input, seg)
 end
 
 -- 公历时间
-function time_translator(input, seg)
+local function time_translator(input, seg)
 	local keyword = rv_var["time_var"]
 	if (input == keyword) then
 		local times = {
@@ -311,16 +312,16 @@ function time_translator(input, seg)
 end
 
 -- 农历日期
-function lunar_translator(input, seg)
+local function lunar_translator(input, seg)
 	local keyword = rv_var["nl_var"]
 	if (input == keyword) then
 		local lunar = {
-				{Date2LunarDate(os.date("%Y%m%d")) .. JQtest(os.date("%Y%m%d")),"〔公历⇉农历〕"}
-				,{Date2LunarDate(os.date("%Y%m%d")) .. GetLunarSichen(os.date("%H"),1),"〔公历⇉农历〕"}
-				,{lunarJzl(os.date("%Y%m%d%H")),"〔公历⇉干支〕"}
-				,{LunarDate2Date(os.date("%Y%m%d"),0),"〔农历⇉公历〕"}
+				{lunarDate.Date2LunarDate(os.date("%Y%m%d")) .. lunarJq.JQtest(os.date("%Y%m%d")),"〔公历⇉农历〕"}
+				,{lunarDate.Date2LunarDate(os.date("%Y%m%d")) .. GetLunarSichen(os.date("%H"),1),"〔公历⇉农历〕"}
+				,{lunarGz.lunarJzl(os.date("%Y%m%d%H")),"〔公历⇉干支〕"}
+				,{lunarDate.LunarDate2Date(os.date("%Y%m%d"),0),"〔农历⇉公历〕"}
 			}
-		local leapDate={LunarDate2Date(os.date("%Y%m%d"),1).."（闰）","〔农历⇉公历〕"}
+		local leapDate={lunarDate.LunarDate2Date(os.date("%Y%m%d"),1).."（闰）","〔农历⇉公历〕"}
 		if string.match(leapDate[1],"^(%d+)")~=nil then table.insert(lunar,leapDate) end
 		for i =1,#lunar do
 			yield(Candidate(keyword, seg.start, seg._end, lunar[i][1], lunar[i][2]))
@@ -337,7 +338,7 @@ local function QueryLunarInfo(date)
 		if string.len(str)==4 then str=str..string.sub(os.date("%m%d%H"),1) elseif string.len(str)==5 then str=str..string.sub(os.date("%m%d%H"),2) elseif string.len(str)==6 then str=str..string.sub(os.date("%m%d%H"),3) elseif string.len(str)==7 then str=str..string.sub(os.date("%m%d%H"),4)
 		elseif string.len(str)==8 then str=str..string.sub(os.date("%m%d%H"),5) elseif string.len(str)==9 then str=str..string.sub(os.date("%m%d%H"),6) else str=string.sub(str,1,10) end
 		if tonumber(string.sub(str,5,6))>12 or tonumber(string.sub(str,5,6))<1 or tonumber(string.sub(str,7,8))>31 or tonumber(string.sub(str,7,8))<1 or tonumber(string.sub(str,9,10))>24 then return result end
-		LunarDate=Date2LunarDate(str)  LunarGz=lunarJzl(str)  DateTime=LunarDate2Date(str,0)
+		LunarDate=lunarDate.Date2LunarDate(str)  LunarGz=lunarGz.lunarJzl(str)  DateTime=lunarDate.LunarDate2Date(str,0)
 		if LunarGz~=nil then
 			result={
 				{CnDate_translator(string.sub(str,1,8)),"〔中文日期〕"}
@@ -346,7 +347,7 @@ local function QueryLunarInfo(date)
 			}
 			if tonumber(string.sub(str,7,8))<31 then
 				table.insert(result,{DateTime,"〔农历⇉公历〕"})
-				local leapDate={LunarDate2Date(str,1).."（闰）","〔农历⇉公历〕"}
+				local leapDate={lunarDate.LunarDate2Date(str,1).."（闰）","〔农历⇉公历〕"}
 				if string.match(leapDate[1],"^(%d+)")~=nil then table.insert(result,leapDate) end
 			end
 		end
@@ -356,7 +357,7 @@ local function QueryLunarInfo(date)
 end
 
 -- 农历查询
-function QueryLunar_translator(input, seg)	--以任意大写字母开头引导反查农历日期，日期位数不足会以当前日期补全。
+local function QueryLunar_translator(input, seg)	--以任意大写字母开头引导反查农历日期，日期位数不足会以当前日期补全。
 	local str,lunar
 	if string.match(input,"^(%u+%d+)$")~=nil then
 		str = string.gsub(input,"^(%a+)", "")
@@ -383,7 +384,7 @@ function single_char(input, env)
 end
 
 -- 星期
-function week_translator(input, seg)
+local function week_translator(input, seg)
 	local keyword = rv_var["week_var"]
 	-- local luapath=debug.getinfo(1,"S").source:sub(2):sub(1,-9)   -- luapath.."lua\\user.txt"
 	if (input == keyword) then
@@ -399,10 +400,10 @@ function week_translator(input, seg)
 end
 
 --列出当年余下的节气
-function Jq_translator(input, seg)
+local function Jq_translator(input, seg)
 	local keyword = rv_var["jq_var"]
 	if (input == keyword) then
-		local jqs = GetNowTimeJq(os.date("%Y%m%d"))
+		local jqs = lunarJq.GetNowTimeJq(os.date("%Y%m%d"))
 		for i =1,#jqs do
 			yield(Candidate(keyword, seg.start, seg._end, jqs[i], "〔节气〕"))
 		end
@@ -421,7 +422,7 @@ end
 ----------------------------------------------------------------
 
 -- 匹配长字符串
-function longstring_translator(input, seg)	--编码为小写字母开头为过滤条件为"^(%l+%a+)" 以/开头的"^(%l+)"改为"^/"，编码为大写字母开头改为"^(%u+%a+)"，不分大小写为"^(%a+)"
+local function longstring_translator(input, seg)	--编码为小写字母开头为过滤条件为"^(%l+%a+)" 以/开头的"^(%l+)"改为"^/"，编码为大写字母开头改为"^(%u+%a+)"，不分大小写为"^(%a+)"
 	local str,m,strings
 	if string.match(input,"^(%u+%a+)")~=nil then
 		str = string.gsub(input,"^/", "")
@@ -437,10 +438,10 @@ function longstring_translator(input, seg)	--编码为小写字母开头为过�
 	end
 end
 
-function number_translator(input, seg)
+local function number_translator(input, seg)
 	local str,num,numberPart
 	if string.match(input,"^(%u+%d+)(%.?)(%d*)$")~=nil then
-		str = string.gsub(input,"^(%a+)", "")  numberPart=number_translatorFunc(str)
+		str = string.gsub(input,"^(%a+)", "")  numberPart=number.number_translatorFunc(str)
 		if #numberPart>0 then
 			for i=1,#numberPart do
 				yield(Candidate(input, seg.start, seg._end, numberPart[i][1],numberPart[i][2]))

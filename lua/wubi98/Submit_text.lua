@@ -92,7 +92,7 @@ local function commit_text_processor(key, env)
 end
 
 -- 记录自造词、文件路径userphrasepath在rime.lua中定义
-function fileappendtext(filepath,context,input,schemaname)
+local function fileappendtext(filepath,context,input,schemaname)
 	if not context:find('%a') then
 		input=splitinput(input,utf8.len(context))
 		context=context.."\t"..input.."\t〔"..schemaname.."〕"
@@ -107,7 +107,7 @@ function fileappendtext(filepath,context,input,schemaname)
 end
 
 -- 同步删除用户词条
-function DeleteUserphrase(filepath,context,input,schemaname)
+local function DeleteUserphrase(filepath,context,input,schemaname)
 	if filepath~="" and context~="" and input~="" and schemaname~="" then
 		context=context.."\t"..input.."\t〔"..schemaname.."〕"
 		local usertext=readUserphrase(filepath)
@@ -123,7 +123,7 @@ function DeleteUserphrase(filepath,context,input,schemaname)
 end
 
 -- 读取词条文件内容
-function readUserphrase(file)
+local function readUserphrase(file)
 	local f = io.open(file,"rb")
 	local content = f:read("*all")
 	f:close()
@@ -132,7 +132,7 @@ end
 
 
 -- 格式化五笔组合编码
-function splitinput(input,len)
+local function splitinput(input,len)
 	input="`"..input:gsub("%`*$","")
 	if len==2 and input:find("(%`%l%l+%`%l%l+)") then
 		input=input:gsub('(%`%l%l)%l*(%`%l%l)%l*', '%1%2')

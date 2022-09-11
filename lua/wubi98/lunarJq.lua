@@ -7,21 +7,21 @@
 --========角度变换===============
 local rad = 180*3600/math.pi --每弧度的角秒数
 local RAD = 180/math.pi	  --每弧度的角度数
-function int2(v) --取整数部分
+local function int2(v) --取整数部分
 	v=math.floor(v)
 	if v<0 then return v+1
 	else return v
 	end
 end
 
-function rad2mrad(v)   --对超过0-2PI的角度转为0-2PI
+local function rad2mrad(v)   --对超过0-2PI的角度转为0-2PI
 	v=math.fmod(v ,2*math.pi)
 	if v<0 then  return v+2*math.pi
 	else return v
 	end
 end
 
-function rad2str(d,tim) --将弧度转为字串
+local function rad2str(d,tim) --将弧度转为字串
 	---tim=0输出格式示例: -23°59' 48.23"
 	---tim=1输出格式示例:  18h 29m 44.52s
 	local s="+"
@@ -174,12 +174,12 @@ end,
 local hcjjB = {84381.448, -46.8150, -0.00059, 0.001813}--黄赤交角系数表
 local preceB= {0,50287.92262,111.24406,0.07699,-0.23479,-0.00178,0.00018,0.00001}--Date黄道上的岁差p
 
-function hcjj1 (t) --返回黄赤交角(常规精度),短期精度很高
+local function hcjj1 (t) --返回黄赤交角(常规精度),短期精度很高
 	local t1=t/36525 t2=t1*t1  t3=t2*t1
 	return (hcjjB[1] +hcjjB[2]*t1 +hcjjB[3]*t2 +hcjjB[4]*t3)/rad
 end
 
-function HCconv(JW,E) --黄赤转换(黄赤坐标旋转)
+local function HCconv(JW,E) --黄赤转换(黄赤坐标旋转)
 	--黄道赤道坐标变换,赤到黄E取负
 	local HJ=rad2mrad(JW[1])  HW=JW[2]
 	local sinE =math.sin(E) cosE =math.cos(E)
@@ -189,7 +189,7 @@ function HCconv(JW,E) --黄赤转换(黄赤坐标旋转)
 	JW[2]=math.asin(sinW)
 end
 
-function addPrece(jd,zb) --补岁差
+local function addPrece(jd,zb) --补岁差
 	local i t=1 v=0  t1=jd/365250
 	for i=2,8 do t=t*t1 v=v+preceB[i]*t end
 	zb[1]=rad2mrad(zb[1]+(v+2.9965*t1)/rad)
@@ -200,7 +200,7 @@ local GXC_e={0.016708634, -0.000042037,-0.0000001267} --离心率
 local GXC_p={102.93735/RAD,1.71946/RAD, 0.00046/RAD}  --近点
 local GXC_l={280.4664567/RAD,36000.76982779/RAD,0.0003032028/RAD,1/49931000/RAD,-1/153000000/RAD} --太平黄经
 local GXC_k=20.49552/rad --光行差常数
-function addGxc(t,zb)--恒星周年光行差计算(黄道坐标中)
+local function addGxc(t,zb)--恒星周年光行差计算(黄道坐标中)
 	local t1=t/36525
 	local t2=t1*t1
 	local t3=t2*t1
@@ -229,7 +229,7 @@ local nutB={--章动表
 3.6930589926, 25128.109647645, 0.0001033681, 3.1496E-07,-1.7218E-09,   -301,	0,  129, -1,
 3.5500658664,   628.361975567, 0.0000132664, 1.3575E-09,-1.7245E-10,	217,   -5,  -95,  3}
 
-function nutation(t) --计算黄经章动及交角章动
+local function nutation(t) --计算黄经章动及交角章动
 	local d={}
 	d.Lon=0  d.Obl=0  t=t/36525
 	local i,c
@@ -248,7 +248,7 @@ function nutation(t) --计算黄经章动及交角章动
 	return d
 end
 
-function nutationRaDec(t,zb) --本函数计算赤经章动及赤纬章动
+local function nutationRaDec(t,zb) --本函数计算赤经章动及赤纬章动
 	local Ra=zb[1]
 	local Dec=zb[2]
 	local E=hcjj1(t)
@@ -386,7 +386,7 @@ local M1n={3.81034392032, 8.39968473021E+03,-3.31919929753E-05, --月球平黄�
 
 --==================日位置计算===================
 local EnnT=0 --调用Enn前先设置EnnT时间变量
-function Enn(F) --计算E10,E11,E20等,即:某一组周期项或泊松项算出,计算前先设置EnnT时间
+local function Enn(F) --计算E10,E11,E20等,即:某一组周期项或泊松项算出,计算前先设置EnnT时间
 	local i
 	local v=0
 	for i=1,#F,3 do
@@ -396,7 +396,7 @@ function Enn(F) --计算E10,E11,E20等,即:某一组周期项或泊松项算出,
 	return v
 end
 
-function earCal(jd)--返回地球位置,日心Date黄道分点坐标
+local function earCal(jd)--返回地球位置,日心Date黄道分点坐标
 	EnnT=jd/365250
 	--print('EnnT=' .. EnnT)
 	local llr={}
@@ -416,7 +416,7 @@ function earCal(jd)--返回地球位置,日心Date黄道分点坐标
 	return llr
 end
 
-function sunCal2(jd) --传回jd时刻太阳的地心视黄经及黄纬
+local function sunCal2(jd) --传回jd时刻太阳的地心视黄经及黄纬
 	local sun=earCal(jd)  sun[1]=sun[1] + math.pi sun[2]=-sun[2] --计算太阳真位置
 	local d=nutation(jd)  sun[1]=rad2mrad(sun[1]+d.Lon)   --补章动
 	addGxc(jd,sun)  --补周年黄经光行差
@@ -425,7 +425,7 @@ end
 
 --==================月位置计算===================
 local MnnT=0 --调用Mnn前先设置MnnT时间变量
-function Mnn(F) --计算M10,M11,M20等,计算前先设置MnnT时间
+local function Mnn(F) --计算M10,M11,M20等,计算前先设置MnnT时间
 	local i
 	local  v=0
 	local t1=MnnT
@@ -438,7 +438,7 @@ function Mnn(F) --计算M10,M11,M20等,计算前先设置MnnT时间
 	return v
 end
 
-function moonCal(jd)--返回月球位置,返回地心Date黄道坐标
+local function moonCal(jd)--返回月球位置,返回地心Date黄道坐标
 	MnnT=jd/36525
 	local t1=MnnT
 	local t2=t1*t1
@@ -454,14 +454,14 @@ function moonCal(jd)--返回月球位置,返回地心Date黄道坐标
 	return llr
 end
 
-function moonCal2(jd) --传回月球的地心视黄经及视黄纬
+local function moonCal2(jd) --传回月球的地心视黄经及视黄纬
 	local moon=moonCal(jd)
 	local d=nutation(jd)
 	moon[1]=rad2mrad(moon[1]+d.Lon) --补章动
 	return moon
 end
 
-function moonCal3(jd) --传回月球的地心视赤经及视赤纬
+local function moonCal3(jd) --传回月球的地心视赤经及视赤纬
 	local moon=moonCal(jd)
 	HCconv(moon,hcjj1(jd))
 	nutationRaDec(jd,moon) --补赤经及赤纬章动
@@ -470,7 +470,7 @@ function moonCal3(jd) --传回月球的地心视赤经及视赤纬
 end
 
 --==================地心坐标中的日月位置计算===================
-function jiaoCai(lx,t,jiao)
+local function jiaoCai(lx,t,jiao)
 	--lx=1时计算t时刻日月角距与jiao的差, lx=0计算t时刻太阳黄经与jiao的差
 	local sun=earCal(t)  --计算太阳真位置(先算出日心坐标中地球的位置)
 	sun[1]=sun[1] + math.pi sun[2]=-sun[2] --转为地心坐标
@@ -486,7 +486,7 @@ function jiaoCai(lx,t,jiao)
 end
 
 --==================已知位置反求时间===================
-function jiaoCal(t1,jiao,lx) --t1是J2000起算儒略日数
+local function jiaoCal(t1,jiao,lx) --t1是J2000起算儒略日数
 	--已知角度(jiao)求时间(t)
 	--lx=0是太阳黄经达某角度的时刻计算(用于节气计算)
 	--lx=1是日月角距达某角度的时刻计算(用于定朔望等)
@@ -523,7 +523,7 @@ local jqB={ --节气表
 "春分","清明","谷雨","立夏","小满","芒种","夏至","小暑","大暑","立秋","处暑","白露",
 "秋分","寒露","霜降","立冬","小雪","大雪","冬至","小寒","大寒","立春","雨水","惊蛰"}
 
-function JQtest(y) --节气使计算范例,y是年分,这是个测试函数
+local function JQtest(y) --节气使计算范例,y是年分,这是个测试函数
 	local i,q,s1,s2  y=tostring(y)
 	local jd=365.2422*(tonumber(y.sub(y,1,4))-2000)
 	for i=0,23 do
@@ -538,7 +538,7 @@ function JQtest(y) --节气使计算范例,y是年分,这是个测试函数
 	return ""
 end
 
-function GetNextJQ(y) --节气使计算范例,y是年分,这是个测试函数
+local function GetNextJQ(y) --节气使计算范例,y是年分,这是个测试函数
 	local i,obj,q,s1,s2  y=tostring(y)
 	local jd=365.2422*(tonumber(y.sub(y,1,4))-2000)
 	obj={}
@@ -557,7 +557,7 @@ function GetNextJQ(y) --节气使计算范例,y是年分,这是个测试函数
 	return obj
 end
 
-function getJQ(y) --返回一年中各个节气的时间表，从春分开始
+local function getJQ(y) --返回一年中各个节气的时间表，从春分开始
 	local i
 	local jd=365.2422*(y-2000)
 	local q
@@ -570,7 +570,7 @@ function getJQ(y) --返回一年中各个节气的时间表，从春分开始
 end
 
 --返回一年的二十四个节气,从立春开始
-function getYearJQ(y)
+local function getYearJQ(y)
 	local jq1 = getJQ(y-1) --上一年
 	local jq2 = getJQ(y) -- 当年
 	local jq = {}
@@ -581,7 +581,7 @@ end
 
 
 --=================定朔弦望计算========================
-function dingSuo(y,arc) --这是个测试函数
+local function dingSuo(y,arc) --这是个测试函数
 	local i,jd=365.2422*(y-2000),q,s1,s2
 	print("月份:世界时  原子时<br>")
 	for i=0,11 do
@@ -631,7 +631,7 @@ end
 --...
 --end
 
-function GetNowTimeJq(date)
+local function GetNowTimeJq(date)
 	local JQtable1,JQtable2
 	date=tostring(date)
 	if string.len(date)<8 then return "无效日期" end
@@ -662,3 +662,4 @@ local function main()
 end
 
 --main()
+return { JQtest = JQtest, getYearJQ = getYearJQ, GetNowTimeJq = GetNowTimeJq }

@@ -8,7 +8,7 @@
 --[[干支历的年以立春发生时刻（注意，不是立春日的0时）为年干支的起点；各月干支以十二节时刻（注意，不一定是各节气日的0时）
 --]]
 -- require('common')
-local_require("lunarJq")
+local lunarJq = local_require("lunarJq")
 
 GanZhiLi = {
 }
@@ -35,7 +35,7 @@ function GanZhiLi:calRound(start, offset, round)
 end
 
 --周期循环数
-function calR2(n, round)
+local function calR2(n, round)
     local x = math.floor(math.fmod(n,round))
     if x==0 then x=round end
     return x
@@ -49,11 +49,11 @@ function GanZhiLi:setTime(t)
     --    print(k,v)
     --end
     --先取公历今年的干支
-    self.jqs = getYearJQ(self.tday.year)
+    self.jqs = lunarJq.getYearJQ(self.tday.year)
     self.ganZhiYearNum = self:calGanZhiYearNum()
     if self.ganZhiYearNum ~= self.tday.year then
         --如果在节气上还没到今年的立春，则还没到干支历的今年，需要取干支历的年份的24节气
-        self.jqs = getYearJQ(self.ganZhiYearNum)
+        self.jqs = lunarJq.getYearJQ(self.ganZhiYearNum)
     end
     self.ganZhiMonNum = self:calGanZhiMonthNum()
     self.curJq = self:getCurJQ()
@@ -204,7 +204,7 @@ local gan = i % 10
         return tiangan[gan]..dizhi[zhi]
 end
 
-function lunarJzl(y)
+local function lunarJzl(y)
     local x,yidx,midx,didx,hidx
     y=tostring(y)
     x = GanZhiLi:new()
@@ -224,3 +224,4 @@ end
 
 --测试
 --print(lunarJzl(os.date("%Y%m%d%H")))
+return {lunarJzl = lunarJzl}
