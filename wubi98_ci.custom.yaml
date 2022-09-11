@@ -4,9 +4,11 @@ patch:
   "translator/enable_completion": true
   "key_binder/import_preset": default
 
-  "reverse_lookup/enable_completion": true
+  # "reverse_lookup/enable_completion": true
   # multiple reverse_lookup
-  "schema/dependencies/@next": wubi98_openfly_extra
+  # "schema/dependencies/+": 
+  #   - wubi98_openfly_extra
+  #   - xkjd6_bj
   # reverse_lookup/dictionary must be null 
   # for multiple reverse lookup table_translator
   "reverse_lookup/dictionary": null
@@ -26,9 +28,20 @@ patch:
     tag: rvlk_openfly
     extra_tags:
       - rvlk2
+  rvlk_xkjd6:
+    prefix: "z."
+    tips: "〔键道反查〕"
+    dictionary: xkjd6.extended
+    auto_completion: true
+    tag: rvlk_xkjd6
+    extra_tags:
+      - rvlk2
   "engine/segmentors/@after 4": affix_segmentor@rvlk_openfly
+  "engine/segmentors/@after 5": affix_segmentor@rvlk_xkjd6
   # actually reverse_lookup_translator is not required.
   # do not modify it for complying with original schema.
   "engine/translators/@after 3": table_translator@rvlk_openfly
+  "engine/translators/@after 4": table_translator@rvlk_xkjd6
   "recognizer/patterns/+":
     rvlk_openfly: "^z,[a-z]*$"
+    rvlk_xkjd6: "^z.[a-z]*$"

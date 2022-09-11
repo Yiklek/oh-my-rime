@@ -94,6 +94,10 @@ $ofbd`d(标点)、，。	ofb
 
 MacOS基础功能可用。
 
+## 星空键道6
+
+使用[星空键道6](https://github.com/xkinput/Rime_JD)[bd1861](https://github.com/xkinput/Rime_JD/tree/bd18618c315b152b7ddba55ea1d6e542353397db)码表
+
 ## 讨论与贡献
 
 请先参考本文，如果是本文没有提到的使用上的问题，可以在[讨论页面](https://github.com/Yiklek/oh-my-rime/discussions)提出；如果怀疑是程序错误、词库错误、配置错误等，可以在[议题页面](https://github.com/Yiklek/oh-my-rime/issues)提出；如果想要贡献代码或修改词库，也可以提交[拉取请求](https://github.com/Yiklek/oh-my-rime/pulls)。
