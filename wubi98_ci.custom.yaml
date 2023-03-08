@@ -2,6 +2,7 @@ patch:
   "history/size": 5
   "style/font_face": "98WB-2"
   "translator/enable_completion": true
+  "translator/enable_sentence": false
   "key_binder/import_preset": default
 
   # "reverse_lookup/enable_completion": true
@@ -45,3 +46,4 @@ patch:
   "recognizer/patterns/+":
     rvlk_openfly: "^z,[a-z]*$"
     rvlk_xkjd6: "^z.[a-z]*$"
+  "switches/@2/reset": 0

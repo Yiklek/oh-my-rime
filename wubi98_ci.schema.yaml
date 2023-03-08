@@ -42,13 +42,10 @@ switches:
     states: [ 半, 全 ]
 engine:
   filters:
-    # - charset_filter@gb2312
     - simplifier
     - lua_filter@single_char
     - "reverse_lookup_filter@ci_reverse_lookup"
     - lua_filter@new_spelling@spelling
-    # - lua_filter@single_char
-    # - "simplifier@jiayin"
     - uniquifier
   processors:
     - ascii_composer
@@ -67,7 +64,6 @@ engine:
     - "affix_segmentor@mkst"
     - "affix_segmentor@rvl_zhuyin"
     - "affix_segmentor@rvlk1"
-    # - "affix_segmentor@zhuyin_fix"
     - abc_segmentor
     - punct_segmentor
     - fallback_segmentor
@@ -78,7 +74,6 @@ engine:
     - table_translator
     - "table_translator@fixed"
     - "table_translator@mkst"
-    #- "table_translator@zhuyin_fix"
     - "table_translator@rvl_zhuyin"
     - "history_translator@history"
     - "lua_translator@helper"
@@ -93,8 +88,8 @@ translator:
   dictionary: wubi98_ci.extended
   db_class: tabledb
   initial_quality: 100000
-  enable_encoder: true
-  encode_commit_history: true
+  enable_charset_filter: false
+  enable_sentence: false
   enable_encoder: false
   encode_commit_history: false
   max_phrase_length: 4
@@ -146,12 +141,6 @@ ci_reverse_lookup:
   tags:
     - rvlk2
 
-zhuyin_fix:
-  __include: /translator
-  prefix: '~'
-  tips: "〔以形查音〕"
-  tag: zhuyin_fix
-
 simplifier:
   opencc_config: s2t.json
   option_name: zh_trad
@@ -160,18 +149,6 @@ simplifier:
 lua_reverse_db:
   spelling: wb_spelling
   code: wb_spelling
-
-jiayin:
-  opencc_config: jiayin.json
-  option_name: jiayin
-  show_in_comment: true
-  comment_format:
-    - "xform/<br>/\r/"
-    - "xform/&nbsp/ /"
-  tags:
-#   - abc
-    - zhuyin_fix
-  tips: all
 
 recognizer:
   import_preset: default
@@ -183,7 +160,6 @@ recognizer:
     rvlk2: "^z[a-z]*$"
     uppercase: "[A-Z][-_+.'0-9A-Za-z]*$"
     url: "^(www[.]|https?:|ftp[.:]|mailto:|file:).*$|^[a-z]+[.].+$"
-    zhuyin_fix: "~[a-y]*?$"
     zhuyin: "~[a-y]*?$"
     helper: '^help$'
 charset_filter:

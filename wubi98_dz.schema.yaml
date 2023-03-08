@@ -23,7 +23,6 @@ switches:
   - name: new_spelling
     reset: 1
     states: [ 隐,显 ]
-  #- name: jiayin
   - name: rvl_zhuyin
     reset: 1
   - name: GB2312
@@ -44,7 +43,6 @@ switches:
     states: [ 半, 全 ]
 engine:
   filters:
-    - charset_filter@gb2312  
     - simplifier
     - "reverse_lookup_filter@ci_reverse_lookup"
     - lua_filter@new_spelling@spelling
@@ -67,7 +65,6 @@ engine:
     - matcher
     - "affix_segmentor@mkst"
     - "affix_segmentor@rvlk1"
-    #- "affix_segmentor@zhuyin_fix"
     - "affix_segmentor@rvl_zhuyin"
     - abc_segmentor
     - punct_segmentor
@@ -79,7 +76,6 @@ engine:
     - table_translator
     - "table_translator@fixed"
     - "table_translator@mkst"
-    #- "table_translator@zhuyin_fix"
     - "table_translator@rvl_zhuyin"
     - "history_translator@history"
     - "lua_translator@helper"
@@ -89,7 +85,7 @@ speller:
   auto_clear: max_length
   delimiter: "`"
   max_code_length: 4
-  
+
 translator:
   dictionary: wubi98_dz
   db_class: tabledb
@@ -109,7 +105,7 @@ fixed:
   initial_quality: 1000
   enable_encoder: true
   enable_user_dict: true
-  
+
 mkst:
   __include: /translator
   initial_quality: 10
@@ -134,25 +130,19 @@ reverse_lookup:
     - xform/([nl])ue/$1üe/
     - xform/([jqxy])v/$1u/
   tag: rvlk2
-    
+
 rvlk1:
   __include: /reverse_lookup
   prefix: "z"
   tag: rvlk1
   extra_tags:
-    - rvlk2  
+    - rvlk2
 
 ci_reverse_lookup:
   dictionary: wubi98_dz
   tips: "〔五笔滤镜〕"
   tags:
     - rvlk2
-    
-zhuyin_fix:
-  __include: /translator
-  prefix: '~'
-  tips: "〔以形查音〕"
-  tag: zhuyin_fix
 
 simplifier:
   opencc_config: s2t.json
@@ -162,18 +152,6 @@ simplifier:
 lua_reverse_db:
   spelling: wb_spelling
   code: wb_spelling
-
-jiayin:
-  opencc_config: jiayin.json
-  option_name: jiayin
-  show_in_comment: true
-  comment_format:
-    - "xform/<br>/\r/"
-    - "xform/&nbsp/ /"
-  tags:
-#   - abc
-    - zhuyin_fix
-  tips: all 
 
 recognizer:
   import_preset: default
@@ -185,20 +163,19 @@ recognizer:
     rvlk2: "^z[a-z]*$"
     uppercase: "[A-Z][-_+.'0-9A-Za-z]*$"
     url: "^(www[.]|https?:|ftp[.:]|mailto:|file:).*$|^[a-z]+[.].+$"
-    #zhuyin_fix: "~[a-y]*?$"
     zhuyin: "~[a-y]*?$"
     helper: '^help$'
 charset_filter:
   option_name: gb2312
-  
+
 history:
   input: z
   size: 1
   initial_quality: 1
-  
+
 
 key_binder:
-  bindings: 
+  bindings:
     - { when: has_menu, accept: Left, send: Up }
     - { when: has_menu, accept: Right, send: Down }
     - {accept: minus, send: Page_Up, when: has_menu}
@@ -213,14 +190,14 @@ key_binder:
     - {accept: "Control+Shift+dollar", toggle: zh_trad, when: always}
     - {accept: "Control+Shift+F", toggle: zh_trad, when: always}
     - {accept: "Control+Shift+H", toggle: new_spelling, when: always}
-    - {accept: "Control+Shift+J", toggle: new_hide_pinyin, when: always} 
+    - {accept: "Control+Shift+J", toggle: new_hide_pinyin, when: always}
     - {accept: "Control+Shift+K", toggle: single_char, when: always}
-    - {accept: "Control+Shift+U", toggle: GB2312, when: always} 
-    - {accept: "Control+Shift+I", toggle: GB2312, when: always} 
+    - {accept: "Control+Shift+U", toggle: GB2312, when: always}
+    - {accept: "Control+Shift+I", toggle: GB2312, when: always}
     - {accept: "Control+Shift+O", toggle: GB2312, when: always}
 
 punctuator:
   import_preset: symbols
-  
+
 menu:
-  page_size: 5  
+  page_size: 5
