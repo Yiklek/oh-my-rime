@@ -15,7 +15,6 @@ local function commit_text_processor(key, env)
 	local page_size = env.engine.schema.page_size
 	local schema_id=env.engine.schema.schema_id or ""
 	local candidate_count =0
-	local keyrepr = key:repr()
 
 	if input_text:find("^%p*(%a+%d*)$") then
 		if context:has_menu() then
@@ -50,15 +49,6 @@ local function commit_text_processor(key, env)
 				-- engine:commit_text(env.userphrase..env.inputtext.."\r")
 				fileappendtext(userphrasepath,env.userphrase,env.inputtext,schema_name)				env.userphrase=""				env.inputtext=""
 			end
-		end
-	end
-
-	-- Control+Delete&Shift+Delete同步删除
-	if context:has_menu() and keyrepr=="Control+Delete" or context:has_menu() and keyrepr=="Shift+Delete" then
-		local selected_candidate=segment:get_selected_candidate() or ""
-		if selected_candidate.text~="" and selected_candidate.text~=nil then
-			-- engine:commit_text(selected_candidate.text..input_text.."\r")
-			DeleteUserphrase(userphrasepath,selected_candidate.text,input_text,schema_name)
 		end
 	end
 
@@ -102,34 +92,8 @@ local function fileappendtext(filepath,context,input,schemaname)
 			f:write(context.."\r")
 		end
 		f:close()
-		usertext=nil
 	end
 end
-
--- 同步删除用户词条
-local function DeleteUserphrase(filepath,context,input,schemaname)
-	if filepath~="" and context~="" and input~="" and schemaname~="" then
-		context=context.."\t"..input.."\t〔"..schemaname.."〕"
-		local usertext=readUserphrase(filepath)
-		if usertext~="" and usertext~=nil and usertext:find(context) then
-			usertext="\r"..usertext:gsub('^[\r]*','')
-			usertext=usertext:gsub('\r'..context,'')
-			local f=io.open(filepath,"w+")
-			f:write(usertext:gsub('^[\r]*',''),'')
-			f:close()
-		end
-		usertext=nil
-	end
-end
-
--- 读取词条文件内容
-local function readUserphrase(file)
-	local f = io.open(file,"rb")
-	local content = f:read("*all")
-	f:close()
-	return content
-end
-
 
 -- 格式化五笔组合编码
 local function splitinput(input,len)

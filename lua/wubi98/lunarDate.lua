@@ -1,4 +1,4 @@
-﻿------------------------------------
+------------------------------------
 ------wirting by 98wubi Group-------
 ------http://98wb.ys168.com/--------
 ------------------------------------
@@ -62,21 +62,6 @@ local function IsLeap(y)
 	else return 365 end
 end
 
---返回当年过了多少天
-local function leaveDate(y)
-	local day,total
-	total=0
-	if IsLeap(tonumber(string.sub(y,1,4)))>365 then day={31,29,31,30,31,30,31,31,30,31,30,31}
-	else day={31,28,31,30,31,30,31,31,30,31,30,31} end
-	if tonumber(string.sub(y,5,6))>1 then
-		for i=1,tonumber(string.sub(y,5,6))-1 do total=total+day[i] end
-		total=total+tonumber(string.sub(y,7,8))
-	else
-		return tonumber(string.sub(y,7,8))
-	end
-	return tonumber(total)
-end
-
 --计算日期差，两个8位数日期之间相隔的天数，date2>date1
 local function diffDate(date1,date2)
 	local t1,t2,n,total
@@ -100,6 +85,21 @@ local function diffDate(date1,date2)
 		return -1
 	end
 	return total
+end
+
+--返回当年过了多少天
+local function leaveDate(y)
+	local day,total
+	total=0
+	if IsLeap(tonumber(string.sub(y,1,4)))>365 then day={31,29,31,30,31,30,31,31,30,31,30,31}
+	else day={31,28,31,30,31,30,31,31,30,31,30,31} end
+	if tonumber(string.sub(y,5,6))>1 then
+		for i=1,tonumber(string.sub(y,5,6))-1 do total=total+day[i] end
+		total=total+tonumber(string.sub(y,7,8))
+	else
+		return tonumber(string.sub(y,7,8))
+	end
+	return tonumber(total)
 end
 
 --公历转农历，支持转化范围公元1900-2100年

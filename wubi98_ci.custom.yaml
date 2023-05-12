@@ -1,7 +1,7 @@
 patch:
   "history/size": 5
   "style/font_face": "98WB-2"
-  "translator/enable_completion": true
+  "translator/enable_completion": false
   "translator/enable_sentence": false
   "key_binder/import_preset": default
 

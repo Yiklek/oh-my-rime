@@ -17,6 +17,7 @@ schema:
 switches:
   - name: ascii_mode
     reset: 0
+    states: [ 中,英 ]
   - name: zh_trad
     reset: 0
     states: [ 简,繁 ]
@@ -25,6 +26,7 @@ switches:
     states: [ 隐,显 ]
   - name: rvl_zhuyin
     reset: 1
+    states: [ 形,拼 ]
   - name: GB2312
     reset: 0
     states: [ 扩,常 ]
@@ -99,41 +101,95 @@ translator:
     - "^z.*$"
 
 fixed:
-  __include: /translator
-  initial_quality: 1000
+  db_class: tabledb
+  dictionary: wubi98_ci.extended
+  disable_user_dict_for_patterns:
+    - "^z.*$"
+  enable_charset_filter: false
+  enable_completion: false
   enable_encoder: true
+  enable_sentence: false
   enable_user_dict: true
   encode_commit_history: false
+  initial_quality: 1000
+  max_phrase_length: 4
+
 mkst:
-  __include: /translator
-  initial_quality: 10
+  db_class: tabledb
+  dictionary: wubi98_ci.extended
+  disable_user_dict_for_patterns:
+    - "^z.*$"
+  enable_charset_filter: false
+  enable_completion: false
+  enable_encoder: false
   enable_sentence: true
-  prefix: '`'
-  tips: "〔精准造词〕"
+  enable_user_dict: false
+  encode_commit_history: false
+  initial_quality: 10
+  max_phrase_length: 4
+  prefix: "`"
   tag: mkst
+  tips: "〔精准造词〕"
+
 rvl_zhuyin:
-  __include: /translator
-  initial_quality: 10
+  db_class: tabledb
+  dictionary: wubi98_ci.extended
+  disable_user_dict_for_patterns:
+    - "^z.*$"
+  enable_charset_filter: false
+  enable_completion: false
+  enable_encoder: false
   enable_sentence: true
-  prefix: '~'
-  tips: "〔以形查音〕"
+  enable_user_dict: false
+  encode_commit_history: false
+  initial_quality: 10
+  max_phrase_length: 4
+  prefix: "~"
   tag: zhuyin
+  tips: "〔以形查音〕"
+
 reverse_lookup:
-  __include: /translator
+  db_class: tabledb
   dictionary: py
-  tips: "〔拼音反查〕"
+  disable_user_dict_for_patterns:
+    - "^z.*$"
+  enable_charset_filter: false
+  enable_completion: false
+  enable_encoder: false
+  enable_sentence: false
+  enable_user_dict: false
+  encode_commit_history: false
+  initial_quality: 100000
+  max_phrase_length: 4
   preedit_format:
-    - xform/([nl])v/$1ü/
-    - xform/([nl])ue/$1üe/
-    - xform/([jqxy])v/$1u/
+    - "xform/([nl])v/$1ü/"
+    - "xform/([nl])ue/$1üe/"
+    - "xform/([jqxy])v/$1u/"
   tag: rvlk2
+  tips: "〔拼音反查〕"
 
 rvlk1:
-  __include: /reverse_lookup
-  prefix: "z"
-  tag: rvlk1
+  db_class: tabledb
+  dictionary: py
+  disable_user_dict_for_patterns:
+    - "^z.*$"
+  enable_charset_filter: false
+  enable_completion: false
+  enable_encoder: false
+  enable_sentence: false
+  enable_user_dict: false
+  encode_commit_history: false
   extra_tags:
     - rvlk2
+  initial_quality: 100000
+  max_phrase_length: 4
+  preedit_format:
+    - "xform/([nl])v/$1ü/"
+    - "xform/([nl])ue/$1üe/"
+    - "xform/([jqxy])v/$1u/"
+  prefix: z
+  tag: rvlk1
+  tips: "〔拼音反查〕"
 
 ci_reverse_lookup:
   dictionary: wubi98_ci.extended
