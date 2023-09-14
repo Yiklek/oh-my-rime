@@ -1,3 +1,36 @@
 patch:
-  "translator/prism": xkjd6.extended
   "schema/version": bd18618c315b152b7ddba55ea1d6e542353397db
+  "translator/prism": xkjd6.extended
+  # 并击删除形码
+  "chord_composer/alphabet": "qwertsdfgzxcbyphjklnm;',./"
+  "chord_composer/algebra":
+    # 定义左手11键
+    - xform/^er(?![左右])/i左/
+    - xform/^df(?![左右])/y左/
+    - xform/^zc(?![左右])/j左/
+    - xform/^wr(?![左右])/p左/
+    - xform/^sf(?![左右])/k左/
+    - xform/^xb(?![左右])/o左/
+    - xform/^we(?![左右])/m左/
+    - xform/^sd(?![左右])/l左/
+    - xform/^xc(?![左右])/h左/
+    - xform/^ef(?![左右])/u左/
+    - xform/^dg(?![左右])/n左/
+
+
+    # 定义右手15键
+    - xform/jk(?![左右])$/a右/
+    - xform/kl(?![左右])$/b右/
+    - xform/lm(?![左右])$/c右/
+    - xform/hk(?![左右])$/d右/
+    - xform/jl(?![左右])$/q右/
+    - xform/m\.(?![左右])$/t右/
+    - xform/j,(?![左右])$/r右/
+    - xform/j\.(?![左右])$/f右/
+    - xform/m\,(?![左右])$/g右/
+    - xform/,\.(?![左右])$/v右/
+    - xform/ln(?![左右])$/e右/
+    - xform/j;(?![左右])$/z右/
+    - xform/km(?![左右])$/s右/
+    - xform/kn(?![左右])$/x右/
+    - xform/k\.(?![左右])$/w右/
