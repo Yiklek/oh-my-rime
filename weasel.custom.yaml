@@ -22,7 +22,7 @@ patch:
   "style/horizontal": true
   "style/color_scheme": metro
   "style/display_tray_icon": false
-  "style/font_point": 12
+  "style/font_point": 15
   "style/font_face": "98WB-2"
   "style/inline_preedit": false
   "style/layout/border_width": 1

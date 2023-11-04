@@ -1,4 +1,5 @@
 patch:
+  "schema/name": "键道6（并击）"
   "schema/version": bd18618c315b152b7ddba55ea1d6e542353397db
   "translator/prism": xkjd6.extended
   # 并击删除形码
@@ -17,7 +18,6 @@ patch:
     - xform/^ef(?![左右])/u左/
     - xform/^dg(?![左右])/n左/
 
-
     # 定义右手15键
     - xform/jk(?![左右])$/a右/
     - xform/kl(?![左右])$/b右/
@@ -34,3 +34,4 @@ patch:
     - xform/km(?![左右])$/s右/
     - xform/kn(?![左右])$/x右/
     - xform/k\.(?![左右])$/w右/
+

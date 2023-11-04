@@ -7,17 +7,18 @@ name: openfly
 version: "v9.9m"
 
 import_tables:
-  - 'openfly.user.top'
-  - 'openfly.fast.symbols'
-  - 'openfly.primary'
-  - 'openfly.secondary.short.code'
-  - 'openfly.secondary'
-  # - 'openfly.completion'
-  - 'openfly.embedded.hint'
-  - 'openfly.off-table'
-  - 'openfly.whimsicality'
-  - 'openfly.symbols'
-  - 'openfly.web'
-  - 'openfly.uncommon'
-  - 'openfly.user'
+  - 'dicts/openfly/openfly.user.top'
+  - 'dicts/openfly/openfly.fast.symbols'
+  - 'dicts/openfly/openfly.primary'
+  - 'dicts/openfly/openfly.secondary.short.code'
+  - 'dicts/openfly/openfly.secondary'
+  # - 'dicts/openfly/openfly.completion'
+  - 'dicts/openfly/openfly.embedded.hint'
+  - 'dicts/openfly/openfly.off-table'
+  - 'dicts/openfly/openfly.whimsicality'
+  - 'dicts/openfly/openfly.symbols'
+  - 'dicts/openfly/openfly.web'
+  - 'dicts/openfly/openfly.uncommon'
+  - 'dicts/openfly/openfly.user'
 ...
+
