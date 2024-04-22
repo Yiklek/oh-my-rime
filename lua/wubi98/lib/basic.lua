@@ -1,11 +1,13 @@
-﻿-- basic.lua
+-- basic.lua
 
 local basic = {}
 package.loaded[...] = basic
 
 function basic.index(table, item)
   for k, v in pairs(table) do
-    if v == item then return k end
+    if v == item then
+      return k
+    end
   end
 end
 
@@ -42,8 +44,11 @@ function basic.utf8sub(str, first, ...)
   end
   local fstoff = utf8.offset(str, first)
   local lstoff = utf8.offset(str, last + 1)
-  if fstoff == nil then fstoff = 1 end
-  if lstoff ~= nil then lstoff = lstoff - 1 end
+  if fstoff == nil then
+    fstoff = 1
+  end
+  if lstoff ~= nil then
+    lstoff = lstoff - 1
+  end
   return string.sub(str, fstoff, lstoff)
 end
-

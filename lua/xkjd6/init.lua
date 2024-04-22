@@ -24,14 +24,12 @@ librime-lua 样例
 配方文件中的引用方法为：`...@foo`。
 --]]
 
-local local_require = require('util').get_local_require("xkjd6")
+local local_require = require("util").get_local_require("xkjd6")
 date_time_translator = local_require("date_time")
-
 
 -- single_char_filter: 候选项重排序，使单字优先
 -- 详见 `lua/single_char.lua`
 -- single_char_filter = require("single_char")
-
 
 -- xkjd6_filter: 单字模式 & 630 即 ss 词组提示
 --- 修改自 @懒散 TsFreddie https://github.com/TsFreddie/jdc_lambda/blob/master/rime/lua/xkjdc_sbb_hint.lua

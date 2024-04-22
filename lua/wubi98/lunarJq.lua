@@ -1,266 +1,384 @@
-﻿------------------------------------
+------------------------------------
 ------wirting by 98wubi Group-------
 ------http://98wb.ys168.com/--------
 ------------------------------------
 
 --*******农历节气计算部分
 --========角度变换===============
-local rad = 180*3600/math.pi --每弧度的角秒数
-local RAD = 180/math.pi	  --每弧度的角度数
+local rad = 180 * 3600 / math.pi --每弧度的角秒数
+local RAD = 180 / math.pi --每弧度的角度数
 local function int2(v) --取整数部分
-	v=math.floor(v)
-	if v<0 then return v+1
-	else return v
-	end
+  v = math.floor(v)
+  if v < 0 then
+    return v + 1
+  else
+    return v
+  end
 end
 
-local function rad2mrad(v)   --对超过0-2PI的角度转为0-2PI
-	v=math.fmod(v ,2*math.pi)
-	if v<0 then  return v+2*math.pi
-	else return v
-	end
+local function rad2mrad(v) --对超过0-2PI的角度转为0-2PI
+  v = math.fmod(v, 2 * math.pi)
+  if v < 0 then
+    return v + 2 * math.pi
+  else
+    return v
+  end
 end
 
-local function rad2str(d,tim) --将弧度转为字串
-	---tim=0输出格式示例: -23°59' 48.23"
-	---tim=1输出格式示例:  18h 29m 44.52s
-	local s="+"
-	local w1="°" w2="’"  w3="”"
-	if d<0 then  d=-d  s='-'end
-	if tim~= 0 then  d=d*12/math.pi w1="h " w2="m " w3="s "
-	else	 d=d*180/math.pi end
-	local a=math.floor(d) d=(d-a)*60
-	local b=math.floor(d) d=(d-b)*60
-	local c=math.floor(d) d=(d-c)*100
-	d=math.floor(d+0.5)
-	if d>=100 then d=d-100 c=c+1 end
-	if c>=60  then c=c-60  b=b+1 end
-	if b>=60  then b=b-60  a=a+1 end
-	a="   "+a b="0"+b c="0"+c d="0"+d
-	local alen = string.len(a)
-	local blen = string.len(b)
-	local clen = string.len(c)
-	local dlen = string.len(d)
-	s = s .. string.sub(a, alen-3,alen)+w1
-	s = s .. string.sub(b, blen-2,blen)+w2
-	s = s .. string.sub(c, clen-2,clen)+"."
-	s = s .. string.sub(d, dlen-2,dlen)+w3
-	return s
+local function rad2str(d, tim) --将弧度转为字串
+  ---tim=0输出格式示例: -23°59' 48.23"
+  ---tim=1输出格式示例:  18h 29m 44.52s
+  local s = "+"
+  local w1 = "°"
+  local w2 = "’"
+  local w3 = "”"
+  if d < 0 then
+    d = -d
+    s = "-"
+  end
+  if tim ~= 0 then
+    d = d * 12 / math.pi
+    w1 = "h "
+    w2 = "m "
+    w3 = "s "
+  else
+    d = d * 180 / math.pi
+  end
+  local a = math.floor(d)
+  d = (d - a) * 60
+  local b = math.floor(d)
+  d = (d - b) * 60
+  local c = math.floor(d)
+  d = (d - c) * 100
+  d = math.floor(d + 0.5)
+  if d >= 100 then
+    d = d - 100
+    c = c + 1
+  end
+  if c >= 60 then
+    c = c - 60
+    b = b + 1
+  end
+  if b >= 60 then
+    b = b - 60
+    a = a + 1
+  end
+  a = "   " + a
+  b = "0" + b
+  c = "0" + c
+  d = "0" + d
+  local alen = string.len(a)
+  local blen = string.len(b)
+  local clen = string.len(c)
+  local dlen = string.len(d)
+  s = s .. string.sub(a, alen - 3, alen) + w1
+  s = s .. string.sub(b, blen - 2, blen) + w2
+  s = s .. string.sub(c, clen - 2, clen) + "."
+  s = s .. string.sub(d, dlen - 2, dlen) + w3
+  return s
 end
 --================日历计算===============
-local J2000=2451545 --2000年前儒略日数(2000-1-1 12:00:00格林威治平时)
+local J2000 = 2451545 --2000年前儒略日数(2000-1-1 12:00:00格林威治平时)
 
-local JDate={ --日期元件
-Y=2000, M=1, D=1, h=12, m=0, s=0,
-dts = { --世界时与原子时之差计算表
--4000,108371.7,-13036.80,392.000, 0.0000, -500, 17201.0,  -627.82, 16.170,-0.3413,
--150, 12200.6,  -346.41,  5.403,-0.1593,  150,  9113.8,  -328.13, -1.647, 0.0377,
-500,  5707.5,  -391.41,  0.915, 0.3145,  900,  2203.4,  -283.45, 13.034,-0.1778,
-1300,   490.1,   -57.35,  2.085,-0.0072, 1600,   120.0,	-9.81, -1.532, 0.1403,
-1700,	10.2,	-0.91,  0.510,-0.0370, 1800,	13.4,	-0.72,  0.202,-0.0193,
-1830,	 7.8,	-1.81,  0.416,-0.0247, 1860,	 8.3,	-0.13, -0.406, 0.0292,
-1880,	-5.4,	 0.32, -0.183, 0.0173, 1900,	-2.3,	 2.06,  0.169,-0.0135,
-1920,	21.2,	 1.69, -0.304, 0.0167, 1940,	24.2,	 1.22, -0.064, 0.0031,
-1960,	33.2,	 0.51,  0.231,-0.0109, 1980,	51.0,	 1.29, -0.026, 0.0032,
-2000,	64.7,	-1.66,  5.224,-0.2905, 2150,   279.4,   732.95,429.579, 0.0158, 6000},
-deltatT = function(JDate, y) --计算世界时与原子时之差,传入年
-	local  i
-	local d=JDate.dts
-	for x=1,100, 5 do
-		if y<d[x+5] or x==96 then  i=x break end
-	end
+local JDate = { --日期元件
+  Y = 2000,
+  M = 1,
+  D = 1,
+  h = 12,
+  m = 0,
+  s = 0,
+  -- stylua: ignore
+  dts = { --世界时与原子时之差计算表
+    -4000,108371.7,-13036.80,392.000, 0.0000, -500, 17201.0,  -627.82, 16.170,-0.3413,
+    -150, 12200.6,  -346.41,  5.403,-0.1593,  150,  9113.8,  -328.13, -1.647, 0.0377,
+    500,  5707.5,  -391.41,  0.915, 0.3145,  900,  2203.4,  -283.45, 13.034,-0.1778,
+    1300,   490.1,   -57.35,  2.085,-0.0072, 1600,   120.0,	-9.81, -1.532, 0.1403,
+    1700,	10.2,	-0.91,  0.510,-0.0370, 1800,	13.4,	-0.72,  0.202,-0.0193,
+    1830,	 7.8,	-1.81,  0.416,-0.0247, 1860,	 8.3,	-0.13, -0.406, 0.0292,
+    1880,	-5.4,	 0.32, -0.183, 0.0173, 1900,	-2.3,	 2.06,  0.169,-0.0135,
+    1920,	21.2,	 1.69, -0.304, 0.0167, 1940,	24.2,	 1.22, -0.064, 0.0031,
+    1960,	33.2,	 0.51,  0.231,-0.0109, 1980,	51.0,	 1.29, -0.026, 0.0032,
+    2000,	64.7,	-1.66,  5.224,-0.2905, 2150,   279.4,   732.95,429.579, 0.0158, 6585.7609102104
+  },
+  deltatT = function(JDate, y) --计算世界时与原子时之差,传入年
+    local i
+    local d = JDate.dts
+    for x = 1, 100, 5 do
+      if y < d[x + 5] or x == 96 then
+        i = x
+        break
+      end
+    end
 
-	local t1=(y-d[i])/(d[i+5]-d[i])*10
-	local t2=t1*t1
-	local t3=t2*t1
-	return d[i+1] +d[i+2]*t1 +d[i+3]*t2 +d[i+4]*t3
-end,
-deltatT2 = function(JDate,jd) --传入儒略日(J2000起算),计算UTC与原子时的差(单位:日)
-	return JDate:deltatT(jd/365.2425+2000)/86400.0
-end,
-toJD = function(JDate, UTC) --公历转儒略日,UTC=1表示原日期是UTC
-	local  y=JDate.Y m=JDate.M n=0 --取出年月
-	if m<=2 then  m=m+12 y=y-1 end
-	if JDate.Y*372+JDate.M*31+JDate.D>=588829 then --判断是否为格里高利历日1582*372+10*31+15
-		n =int2(y/100) n =2-n+int2(n/4)--加百年闰
-	end
-	n = n + int2(365.2500001*(y+4716))	--加上年引起的偏移日数
-	n = n + int2(30.6*(m+1))+JDate.D	   --加上月引起的偏移日数及日偏移数
-	n = n + ((JDate.s/60+JDate.m)/60+JDate.h)/24 - 1524.5
-	if(UTC == 1) then return n+JDate.deltatT2(n-J2000) end
-	return n
-end,
-setFromJD = function(JDate, jd,UTC) --儒略日数转公历,UTC=1表示目标公历是UTC
-	if UTC==1 then  jd= jd - JDate:deltatT2(jd-J2000) end
-	jd =jd+0.5
-	local A=int2(jd) F=jd-A, D  --取得日数的整数部份A及小数部分F
-	if A>2299161 then  D=int2((A-1867216.25)/36524.25) A=A+1+D-int2(D/4) end
-	A = A + 1524 --向前移4年零2个月
-	JDate.Y =int2((A-122.1)/365.25)--年
-	D =A-int2(365.25*JDate.Y) --去除整年日数后余下日数
-	JDate.M =int2(D/30.6001)	   --月数
-	JDate.D =D-int2(JDate.M*30.6001)--去除整月日数后余下日数
-	JDate.Y=JDate.Y-4716 JDate.M=JDate.M-1
-	if JDate.M>12 then  JDate.M=JDate.M - 12 end
-	if JDate.M<=2 then  JDate.Y = JDate.Y+1 end
-	--日的小数转为时分秒
-	F=F*24 JDate.h=int2(F) F=F - JDate.h
-	F=F*60 JDate.m=int2(F) F=F - JDate.m
-	F=F*60 JDate.s=F
-end,
+    local t1 = (y - d[i]) / (d[i + 5] - d[i]) * 10
+    local t2 = t1 * t1
+    local t3 = t2 * t1
+    return d[i + 1] + d[i + 2] * t1 + d[i + 3] * t2 + d[i + 4] * t3
+  end,
+  deltatT2 = function(JDate, jd) --传入儒略日(J2000起算),计算UTC与原子时的差(单位:日)
+    return JDate:deltatT(jd / 365.2425 + 2000) / 86400.0
+  end,
+  toJD = function(JDate, UTC) --公历转儒略日,UTC=1表示原日期是UTC
+    local y = JDate.Y
+    local m = JDate.M
+    local n = 0 --取出年月
+    if m <= 2 then
+      m = m + 12
+      y = y - 1
+    end
+    if JDate.Y * 372 + JDate.M * 31 + JDate.D >= 588829 then --判断是否为格里高利历日1582*372+10*31+15
+      n = int2(y / 100)
+      n = 2 - n + int2(n / 4) --加百年闰
+    end
+    n = n + int2(365.2500001 * (y + 4716)) --加上年引起的偏移日数
+    n = n + int2(30.6 * (m + 1)) + JDate.D --加上月引起的偏移日数及日偏移数
+    n = n + ((JDate.s / 60 + JDate.m) / 60 + JDate.h) / 24 - 1524.5
+    if UTC == 1 then
+      return n + JDate.deltatT2(n - J2000)
+    end
+    return n
+  end,
+  setFromJD = function(JDate, jd, UTC) --儒略日数转公历,UTC=1表示目标公历是UTC
+    if UTC == 1 then
+      jd = jd - JDate:deltatT2(jd - J2000)
+    end
+    jd = jd + 0.5
+    local A = int2(jd)
+    local F = jd - A, D --取得日数的整数部份A及小数部分F
+    if A > 2299161 then
+      D = int2((A - 1867216.25) / 36524.25)
+      A = A + 1 + D - int2(D / 4)
+    end
+    A = A + 1524 --向前移4年零2个月
+    JDate.Y = int2((A - 122.1) / 365.25) --年
+    D = A - int2(365.25 * JDate.Y) --去除整年日数后余下日数
+    JDate.M = int2(D / 30.6001) --月数
+    JDate.D = D - int2(JDate.M * 30.6001) --去除整月日数后余下日数
+    JDate.Y = JDate.Y - 4716
+    JDate.M = JDate.M - 1
+    if JDate.M > 12 then
+      JDate.M = JDate.M - 12
+    end
+    if JDate.M <= 2 then
+      JDate.Y = JDate.Y + 1
+    end
+    --日的小数转为时分秒
+    F = F * 24
+    JDate.h = int2(F)
+    F = F - JDate.h
+    F = F * 60
+    JDate.m = int2(F)
+    F = F - JDate.m
+    F = F * 60
+    JDate.s = F
+  end,
 
-setFromStr = function(JDate, s) --设置时间,参数例:"20000101 120000"或"20000101"
-	JDate.Y=string.sub(s, 1,4)	JDate.M=string.sub(s, 5, 6)  JDate.D=string.sub(s,7, 8)
-	JDate.h=string.sub(s, 10, 11) JDate.m=string.sub(s, 12,13) JDate.s=string.sub(s, 14,18)
-end,
-toStr = function(JDate) --日期转为串
-	local Y="	 " .. JDate.Y
-	local M="0" .. JDate.M
-	local D="0" .. JDate.D
-	local h=JDate.h
-	local m=JDate.m
-	local s=math.floor(JDate.s+.5)
-	if s>=60 then s=s-60 m=m+1 end
-	if m>=60 then m=m-60 h=h+1 end
-	h="0".. h m="0" .. m s="0" .. s
-	local Ylen = string.len(Y)
-	local Mlen = string.len(M)
-	local Dlen = string.len(D)
-	local hlen = string.len(h)
-	local mlen = string.len(m)
-	local slen = string.len(s)
-	Y=string.sub(Y, Ylen -4,Ylen) M=string.sub(M, Mlen-1,Mlen) D=string.sub(D,Dlen-1, Dlen)
-	h=string.sub(h, hlen-1, hlen) m=string.sub(m, mlen-1,mlen) s=string.sub(s, slen-1,slen)
-	return Y .. "-" .. M .. "-" .. D .. " " .. h .. ":" .. m .. ":" .. s
-end,
+  setFromStr = function(JDate, s) --设置时间,参数例:"20000101 120000"或"20000101"
+    JDate.Y = string.sub(s, 1, 4)
+    JDate.M = string.sub(s, 5, 6)
+    JDate.D = string.sub(s, 7, 8)
+    JDate.h = string.sub(s, 10, 11)
+    JDate.m = string.sub(s, 12, 13)
+    JDate.s = string.sub(s, 14, 18)
+  end,
+  toStr = function(JDate) --日期转为串
+    local Y = "	 " .. JDate.Y
+    local M = "0" .. JDate.M
+    local D = "0" .. JDate.D
+    local h = JDate.h
+    local m = JDate.m
+    local s = math.floor(JDate.s + 0.5)
+    if s >= 60 then
+      s = s - 60
+      m = m + 1
+    end
+    if m >= 60 then
+      m = m - 60
+      h = h + 1
+    end
+    h = "0" .. h
+    m = "0" .. m
+    ---@diagnostic disable-next-line: cast-local-type
+    s = "0" .. tostring(s)
+    local Ylen = string.len(Y)
+    local Mlen = string.len(M)
+    local Dlen = string.len(D)
+    local hlen = string.len(h)
+    local mlen = string.len(m)
+    local slen = string.len(s)
+    Y = string.sub(Y, Ylen - 4, Ylen)
+    M = string.sub(M, Mlen - 1, Mlen)
+    D = string.sub(D, Dlen - 1, Dlen)
+    h = string.sub(h, hlen - 1, hlen)
+    m = string.sub(m, mlen - 1, mlen)
+    ---@diagnostic disable-next-line: cast-local-type
+    s = string.sub(s, slen - 1, slen)
+    return Y .. "-" .. M .. "-" .. D .. " " .. h .. ":" .. m .. ":" .. s
+  end,
 
-JQ = function(JDate) --输出节气日期的秒数
-	local t = {}
-	t.year=JDate.Y
-	t.month=JDate.M
-	t.day=JDate.D
-	t.hour=JDate.h
-	t.min=JDate.m
-	t.sec=math.floor(JDate.s+.5)
-	if t.sec>=60 then t.sec=t.sec-60 t.min=t.min+1 end
-	if t.min>=60 then t.min=t.min-60 t.hour=t.hour+1 end
-	return os.time(t)
-end,
+  JQ = function(JDate) --输出节气日期的秒数
+    local t = {}
+    t.year = JDate.Y
+    t.month = JDate.M
+    t.day = JDate.D
+    t.hour = JDate.h
+    t.min = JDate.m
+    t.sec = math.floor(JDate.s + 0.5)
+    if t.sec >= 60 then
+      t.sec = t.sec - 60
+      t.min = t.min + 1
+    end
+    if t.min >= 60 then
+      t.min = t.min - 60
+      t.hour = t.hour + 1
+    end
+    return os.time(t)
+  end,
 
-Dint_dec = function(JDate, jd,shiqu,int_dec) --算出:jd转到当地UTC后,UTC日数的整数部分或小数部分
-	--基于J2000力学时jd的起算点是12:00:00时,所以跳日时刻发生在12:00:00,这与日历计算发生矛盾
-	--把jd改正为00:00:00起算,这样儒略日的跳日动作就与日期的跳日同步
-	--改正方法为jd=jd+0.5-deltatT+shiqu/24
-	--把儒略日的起点移动-0.5(即前移12小时)
-	--式中shiqu是时区,北京的起算点是-8小时,shiqu取8
-	local u=jd+0.5-JDate.deltatT2(jd)+shiqu/24
-	if int_dec~= 0 then  return math.floor(u) --返回整数部分
-	else return u-math.floor(u)	  --返回小数部分
-	end
-end,
+  Dint_dec = function(JDate, jd, shiqu, int_dec) --算出:jd转到当地UTC后,UTC日数的整数部分或小数部分
+    --基于J2000力学时jd的起算点是12:00:00时,所以跳日时刻发生在12:00:00,这与日历计算发生矛盾
+    --把jd改正为00:00:00起算,这样儒略日的跳日动作就与日期的跳日同步
+    --改正方法为jd=jd+0.5-deltatT+shiqu/24
+    --把儒略日的起点移动-0.5(即前移12小时)
+    --式中shiqu是时区,北京的起算点是-8小时,shiqu取8
+    local u = jd + 0.5 - JDate.deltatT2(jd) + shiqu / 24
+    if int_dec ~= 0 then
+      return math.floor(u) --返回整数部分
+    else
+      return u - math.floor(u) --返回小数部分
+    end
+  end,
 
-d1_d2 = function(JDate, d1,d2) --计算两个日期的相差的天数,输入字串格式日期,如:"20080101"
-	local Y=JDate.Y M=JDate.M D=JDate.D h=JDate.h m=JDate.m s=JDate.s --备份原来的数据
-	JDate.setFromStr(string.sub(d1,1,8)+" 120000")	local jd1=JDate.toJD(0)
-	JDate.setFromStr(string.sub(d2,1,8)+" 120000")	local jd2=JDate.toJD(0)
+  d1_d2 = function(JDate, d1, d2) --计算两个日期的相差的天数,输入字串格式日期,如:"20080101"
+    local Y = JDate.Y
+    M = JDate.M
+    D = JDate.D
+    h = JDate.h
+    m = JDate.m
+    s = JDate.s --备份原来的数据
+    JDate.setFromStr(string.sub(d1, 1, 8) + " 120000")
+    local jd1 = JDate.toJD(0)
+    JDate.setFromStr(string.sub(d2, 1, 8) + " 120000")
+    local jd2 = JDate.toJD(0)
 
-	JDate.Y=Y JDate.M=M JDate.D=D JDate.h=h JDate.m=m JDate.s=s --还原
-	if jd1>jd2 then  return  math.floor(jd1-jd2+.0001)
-	else		return -Math.floor(jd2-jd1+.0001)
-	end
-end,
+    JDate.Y = Y
+    JDate.M = M
+    JDate.D = D
+    JDate.h = h
+    JDate.m = m
+    JDate.s = s --还原
+    if jd1 > jd2 then
+      return math.floor(jd1 - jd2 + 0.0001)
+    else
+      return -Math.floor(jd2 - jd1 + 0.0001)
+    end
+  end,
 }
 --=========黄赤交角及黄赤坐标变换===========
-local hcjjB = {84381.448, -46.8150, -0.00059, 0.001813}--黄赤交角系数表
-local preceB= {0,50287.92262,111.24406,0.07699,-0.23479,-0.00178,0.00018,0.00001}--Date黄道上的岁差p
+local hcjjB = { 84381.448, -46.8150, -0.00059, 0.001813 } --黄赤交角系数表
+local preceB = { 0, 50287.92262, 111.24406, 0.07699, -0.23479, -0.00178, 0.00018, 0.00001 } --Date黄道上的岁差p
 
-local function hcjj1 (t) --返回黄赤交角(常规精度),短期精度很高
-	local t1=t/36525 t2=t1*t1  t3=t2*t1
-	return (hcjjB[1] +hcjjB[2]*t1 +hcjjB[3]*t2 +hcjjB[4]*t3)/rad
+local function hcjj1(t) --返回黄赤交角(常规精度),短期精度很高
+  local t1 = t / 36525
+  t2 = t1 * t1
+  t3 = t2 * t1
+  return (hcjjB[1] + hcjjB[2] * t1 + hcjjB[3] * t2 + hcjjB[4] * t3) / rad
 end
 
-local function HCconv(JW,E) --黄赤转换(黄赤坐标旋转)
-	--黄道赤道坐标变换,赤到黄E取负
-	local HJ=rad2mrad(JW[1])  HW=JW[2]
-	local sinE =math.sin(E) cosE =math.cos(E)
-	local sinW=cosE*math.sin(HW)+sinE*math.cos(HW)*math.sin(HJ)
-	local J=math.atan2( math.sin(HJ)*cosE-math.tan(HW)*sinE, math.cos(HJ) )
-	JW[1]=rad2mrad(J)
-	JW[2]=math.asin(sinW)
+local function HCconv(JW, E) --黄赤转换(黄赤坐标旋转)
+  --黄道赤道坐标变换,赤到黄E取负
+  local HJ = rad2mrad(JW[1])
+  HW = JW[2]
+  local sinE = math.sin(E)
+  cosE = math.cos(E)
+  local sinW = cosE * math.sin(HW) + sinE * math.cos(HW) * math.sin(HJ)
+  local J = math.atan2(math.sin(HJ) * cosE - math.tan(HW) * sinE, math.cos(HJ))
+  JW[1] = rad2mrad(J)
+  JW[2] = math.asin(sinW)
 end
 
-local function addPrece(jd,zb) --补岁差
-	local i t=1 v=0  t1=jd/365250
-	for i=2,8 do t=t*t1 v=v+preceB[i]*t end
-	zb[1]=rad2mrad(zb[1]+(v+2.9965*t1)/rad)
+local function addPrece(jd, zb) --补岁差
+  local i
+  t = 1
+  v = 0
+  t1 = jd / 365250
+  for i = 2, 8 do
+    t = t * t1
+    v = v + preceB[i] * t
+  end
+  zb[1] = rad2mrad(zb[1] + (v + 2.9965 * t1) / rad)
 end
 
 --===============光行差==================
-local GXC_e={0.016708634, -0.000042037,-0.0000001267} --离心率
-local GXC_p={102.93735/RAD,1.71946/RAD, 0.00046/RAD}  --近点
-local GXC_l={280.4664567/RAD,36000.76982779/RAD,0.0003032028/RAD,1/49931000/RAD,-1/153000000/RAD} --太平黄经
-local GXC_k=20.49552/rad --光行差常数
-local function addGxc(t,zb)--恒星周年光行差计算(黄道坐标中)
-	local t1=t/36525
-	local t2=t1*t1
-	local t3=t2*t1
-	local t4=t3*t1
-	local L=GXC_l[1] +GXC_l[2]*t1 +GXC_l[3]*t2 +GXC_l[4]*t3 +GXC_l[5]*t4
-	local p=GXC_p[1] +GXC_p[2]*t1 +GXC_p[3]*t2
-	local e=GXC_e[1] +GXC_e[2]*t1 +GXC_e[3]*t2
-	local dL=L-zb[1]
-	local dP=p-zb[1]
-	zb[1]=zb[1] - (GXC_k * (math.cos(dL)-e*math.cos(dP)) / math.cos(zb[2]))
-	zb[2]=zb[2] - (GXC_k * math.sin(zb[2]) * (math.sin(dL)-e*math.sin(dP)))
-	--print('aa', L,p,e,dL,dP,zb[1], zb[2])
-	zb[1]=rad2mrad(zb[1])
+local GXC_e = { 0.016708634, -0.000042037, -0.0000001267 } --离心率
+local GXC_p = { 102.93735 / RAD, 1.71946 / RAD, 0.00046 / RAD } --近点
+local GXC_l = { 280.4664567 / RAD, 36000.76982779 / RAD, 0.0003032028 / RAD, 1 / 49931000 / RAD, -1 / 153000000 / RAD } --太平黄经
+local GXC_k = 20.49552 / rad --光行差常数
+local function addGxc(t, zb) --恒星周年光行差计算(黄道坐标中)
+  local t1 = t / 36525
+  local t2 = t1 * t1
+  local t3 = t2 * t1
+  local t4 = t3 * t1
+  local L = GXC_l[1] + GXC_l[2] * t1 + GXC_l[3] * t2 + GXC_l[4] * t3 + GXC_l[5] * t4
+  local p = GXC_p[1] + GXC_p[2] * t1 + GXC_p[3] * t2
+  local e = GXC_e[1] + GXC_e[2] * t1 + GXC_e[3] * t2
+  local dL = L - zb[1]
+  local dP = p - zb[1]
+  zb[1] = zb[1] - (GXC_k * (math.cos(dL) - e * math.cos(dP)) / math.cos(zb[2]))
+  zb[2] = zb[2] - (GXC_k * math.sin(zb[2]) * (math.sin(dL) - e * math.sin(dP)))
+  --print('aa', L,p,e,dL,dP,zb[1], zb[2])
+  zb[1] = rad2mrad(zb[1])
 end
 
 --===============章动计算==================
-local nutB={--章动表
-2.1824391966,   -33.757045954, 0.0000362262, 3.7340E-08,-2.8793E-10,-171996,-1742,92025, 89,
-3.5069406862,  1256.663930738, 0.0000105845, 6.9813E-10,-2.2815E-10, -13187,  -16, 5736,-31,
-1.3375032491, 16799.418221925,-0.0000511866, 6.4626E-08,-5.3543E-10,  -2274,   -2,  977, -5,
-4.3648783932,   -67.514091907, 0.0000724525, 7.4681E-08,-5.7586E-10,   2062,	2, -895,  5,
-0.0431251803,  -628.301955171, 0.0000026820, 6.5935E-10, 5.5705E-11,  -1426,   34,   54, -1,
-2.3555557435,  8328.691425719, 0.0001545547, 2.5033E-07,-1.1863E-09,	712,	1,   -7,  0,
-3.4638155059,  1884.965885909, 0.0000079025, 3.8785E-11,-2.8386E-10,   -517,   12,  224, -6,
-5.4382493597, 16833.175267879,-0.0000874129, 2.7285E-08,-2.4750E-10,   -386,   -4,  200,  0,
-3.6930589926, 25128.109647645, 0.0001033681, 3.1496E-07,-1.7218E-09,   -301,	0,  129, -1,
-3.5500658664,   628.361975567, 0.0000132664, 1.3575E-09,-1.7245E-10,	217,   -5,  -95,  3}
+-- stylua: ignore
+local nutB = {--章动表
+  2.1824391966,   -33.757045954, 0.0000362262, 3.7340E-08,-2.8793E-10,-171996,-1742,92025, 89,
+  3.5069406862,  1256.663930738, 0.0000105845, 6.9813E-10,-2.2815E-10, -13187,  -16, 5736,-31,
+  1.3375032491, 16799.418221925,-0.0000511866, 6.4626E-08,-5.3543E-10,  -2274,   -2,  977, -5,
+  4.3648783932,   -67.514091907, 0.0000724525, 7.4681E-08,-5.7586E-10,   2062,	2, -895,  5,
+  0.0431251803,  -628.301955171, 0.0000026820, 6.5935E-10, 5.5705E-11,  -1426,   34,   54, -1,
+  2.3555557435,  8328.691425719, 0.0001545547, 2.5033E-07,-1.1863E-09,	712,	1,   -7,  0,
+  3.4638155059,  1884.965885909, 0.0000079025, 3.8785E-11,-2.8386E-10,   -517,   12,  224, -6,
+  5.4382493597, 16833.175267879,-0.0000874129, 2.7285E-08,-2.4750E-10,   -386,   -4,  200,  0,
+  3.6930589926, 25128.109647645, 0.0001033681, 3.1496E-07,-1.7218E-09,   -301,	0,  129, -1,
+  3.5500658664,   628.361975567, 0.0000132664, 1.3575E-09,-1.7245E-10,	217,   -5,  -95,  3
+}
 
 local function nutation(t) --计算黄经章动及交角章动
-	local d={}
-	d.Lon=0  d.Obl=0  t=t/36525
-	local i,c
-	local t1=t
-	local t2=t1*t1
-	local t3=t2*t1
-	local t4=t3*t1
-	local t5=t4*t1
-	for i=1,#nutB,9 do
-		c=nutB[i] +nutB[i+1]*t1 +nutB[i+2]*t2 +nutB[i+3]*t3 +nutB[i+4]*t4
-		d.Lon=d.Lon + (nutB[i+5]+nutB[i+6]*t/10)*math.sin(c) --黄经章动
-		d.Obl=d.Obl + (nutB[i+7]+nutB[i+8]*t/10)*math.cos(c) --交角章动
-	end
-	d.Lon=d.Lon/(rad*10000) --黄经章动
-	d.Obl=d.Obl/(rad*10000) --交角章动
-	return d
+  local d = {}
+  d.Lon = 0
+  d.Obl = 0
+  t = t / 36525
+  local _, c
+  local t1 = t
+  local t2 = t1 * t1
+  local t3 = t2 * t1
+  local t4 = t3 * t1
+  local _ = t4 * t1
+  for i = 1, #nutB, 9 do
+    c = nutB[i] + nutB[i + 1] * t1 + nutB[i + 2] * t2 + nutB[i + 3] * t3 + nutB[i + 4] * t4
+    d.Lon = d.Lon + (nutB[i + 5] + nutB[i + 6] * t / 10) * math.sin(c) --黄经章动
+    d.Obl = d.Obl + (nutB[i + 7] + nutB[i + 8] * t / 10) * math.cos(c) --交角章动
+  end
+  d.Lon = d.Lon / (rad * 10000) --黄经章动
+  d.Obl = d.Obl / (rad * 10000) --交角章动
+  return d
 end
 
-local function nutationRaDec(t,zb) --本函数计算赤经章动及赤纬章动
-	local Ra=zb[1]
-	local Dec=zb[2]
-	local E=hcjj1(t)
-	local sinE=math.sin(E)
-	local cosE=math.cos(E) --计算黄赤交角
-	local d=nutation(t)								  --计算黄经章动及交角章动
-	local cosRa=math.cos(Ra)
-	local sinRa=math.sin(Ra)
-	local tanDec=math.tan(Dec)
-	zb[1]=zb[1] + (cosE+sinE*sinRa*tanDec)*d.Lon-cosRa*tanDec*d.Obl --赤经章动
-	zb[2]= zb[2] + sinE*cosRa*d.Lon+sinRa*d.Obl   --赤纬章动
-	zb[1]=rad2mrad(zb[1])
+local function nutationRaDec(t, zb) --本函数计算赤经章动及赤纬章动
+  local Ra = zb[1]
+  local Dec = zb[2]
+  local E = hcjj1(t)
+  local sinE = math.sin(E)
+  local cosE = math.cos(E) --计算黄赤交角
+  local d = nutation(t) --计算黄经章动及交角章动
+  local cosRa = math.cos(Ra)
+  local sinRa = math.sin(Ra)
+  local tanDec = math.tan(Dec)
+  zb[1] = zb[1] + (cosE + sinE * sinRa * tanDec) * d.Lon - cosRa * tanDec * d.Obl --赤经章动
+  zb[2] = zb[2] + sinE * cosRa * d.Lon + sinRa * d.Obl --赤纬章动
+  zb[1] = rad2mrad(zb[1])
 end
 
 --=================以下是月球及地球运动参数表===================
@@ -278,6 +396,7 @@ end
 * M10,M11等是关于月球的,参数的用法请阅读Mnn()函数
 ***************************************** --]]
 --地球运动VSOP87参数
+-- stylua: ignore start
 local E10={ --黄经周期项
 1.75347045673, 0.00000000000,	 0.0000000000,  0.03341656456, 4.66925680417,  6283.0758499914,  0.00034894275, 4.62610241759, 12566.1516999828,  0.00003417571, 2.82886579606,	 3.5231183490,
 0.00003497056, 2.74411800971,  5753.3848848968,  0.00003135896, 3.62767041758, 77713.7714681205,  0.00002676218, 4.41808351397,  7860.4193924392,  0.00002342687, 6.13516237631,  3930.2096962196,
@@ -377,219 +496,255 @@ local M30={
 	1.0656723,  1.4845449633,  1256.6039104970,-5.3277630E-06, 1.2327842E-09,-1.0887946E-10,	1.0586190, 11.9220903668,  8364.7398411275,-2.1850087E-04,-1.8646419E-07, 8.7760973E-10,   -0.9333176,  9.0816920389, 16728.3705250656, 1.1655481E-04, 2.8300097E-07,-1.3951435E-09,	0.8624328, 12.4550876470,  6656.7485858257,-4.0390768E-04,-4.0490184E-07, 1.9095841E-09,
 	0.8512404,  4.3705828944,	70.9876756153,-1.8807069E-04,-2.1782126E-07, 9.7753467E-10,   -0.8488018, 16.7219647962, 31571.8351843857, 2.4110126E-04, 5.6415276E-07,-2.6269678E-09,   -0.7956264,  3.5134526588, -9095.5551701890, 9.4948529E-05, 4.1873358E-08,-1.9479814E-10
 }
-local M31={
-	0.5139500, 12.0108556517, 14914.4523349355,-6.3524240E-05, 6.3330532E-08,-2.5428962E-10,	0.3824500,  9.6553010794,  6585.7609102104,-2.1583699E-04,-1.8708058E-07, 9.3204945E-10,	0.3265400,  3.9694765808,  7700.3894694766, 1.5497663E-04, 2.4979472E-07,-1.1318993E-09,	0.2639600,  0.7416325637,  8956.9933799736, 1.4964887E-04, 2.5102751E-07,-1.2407788E-09,
-	0.1230200, -1.6139220085,   628.3019552485,-2.6638815E-06, 6.1639211E-10,-5.4439728E-11,	0.0775400,  8.7830116346, 16171.0562454324,-6.8852003E-05, 6.4563317E-08,-3.6316908E-10,	0.0606800,  6.4274570623,  7842.3648207073,-2.2116475E-04,-1.8584780E-07, 8.2317000E-10,	0.0497000, 12.0539813334, 14286.1503796870,-6.0860358E-05, 6.2714140E-08,-1.9984990E-10
+local M1n = {
+  3.81034392032,
+  8.39968473021E+03,
+  -3.31919929753E-05, --月球平黄经系数
+  3.20170955005E-08,
+  -1.53637455544E-10,
 }
-local M1n={3.81034392032, 8.39968473021E+03,-3.31919929753E-05, --月球平黄经系数
-3.20170955005E-08,-1.53637455544E-10 }
-
+-- stylua: ignore end
 --==================日位置计算===================
-local EnnT=0 --调用Enn前先设置EnnT时间变量
+local EnnT = 0 --调用Enn前先设置EnnT时间变量
 local function Enn(F) --计算E10,E11,E20等,即:某一组周期项或泊松项算出,计算前先设置EnnT时间
-	local i
-	local v=0
-	for i=1,#F,3 do
-		v=v+F[i]*math.cos(F[i+1]+EnnT*F[i+2])
-		--print('Fsize=' .. #F, 'i=' .. i, 'v='..v, 'F[i]='..F[i], 'm='..math.cos(F[i+1]+EnnT*F[i+2]))
-	end
-	return v
+  local i
+  local v = 0
+  for i = 1, #F, 3 do
+    v = v + F[i] * math.cos(F[i + 1] + EnnT * F[i + 2])
+    --print('Fsize=' .. #F, 'i=' .. i, 'v='..v, 'F[i]='..F[i], 'm='..math.cos(F[i+1]+EnnT*F[i+2]))
+  end
+  return v
 end
 
-local function earCal(jd)--返回地球位置,日心Date黄道分点坐标
-	EnnT=jd/365250
-	--print('EnnT=' .. EnnT)
-	local llr={}
-	local t1=EnnT
-	local t2=t1*t1
-	local t3=t2*t1
-	local t4=t3*t1
-	local t5=t4*t1
-	--print('t1='..t1, 't2='..t2, 't3='..t3, 't4='..t4, 't5='..t5)
-	llr[1] =Enn(E10) +Enn(E11)*t1 +Enn(E12)*t2 +Enn(E13)*t3 +Enn(E14)*t4 +Enn(E15)*t5
-	--print('sppp')
-	llr[2] =Enn(E20) +Enn(E21)*t1
-	--print('eppp')
-	llr[3] =Enn(E30) +Enn(E31)*t1 +Enn(E32)*t2 +Enn(E33)*t3
-	llr[1]=rad2mrad(llr[1])
-	--print('llr[0]='..llr[1], 'llr[1]='..llr[2], 'llr[2]='..llr[3])
-	return llr
+local function earCal(jd) --返回地球位置,日心Date黄道分点坐标
+  EnnT = jd / 365250
+  --print('EnnT=' .. EnnT)
+  local llr = {}
+  local t1 = EnnT
+  local t2 = t1 * t1
+  local t3 = t2 * t1
+  local t4 = t3 * t1
+  local t5 = t4 * t1
+  --print('t1='..t1, 't2='..t2, 't3='..t3, 't4='..t4, 't5='..t5)
+  llr[1] = Enn(E10) + Enn(E11) * t1 + Enn(E12) * t2 + Enn(E13) * t3 + Enn(E14) * t4 + Enn(E15) * t5
+  --print('sppp')
+  llr[2] = Enn(E20) + Enn(E21) * t1
+  --print('eppp')
+  llr[3] = Enn(E30) + Enn(E31) * t1 + Enn(E32) * t2 + Enn(E33) * t3
+  llr[1] = rad2mrad(llr[1])
+  --print('llr[0]='..llr[1], 'llr[1]='..llr[2], 'llr[2]='..llr[3])
+  return llr
 end
 
 local function sunCal2(jd) --传回jd时刻太阳的地心视黄经及黄纬
-	local sun=earCal(jd)  sun[1]=sun[1] + math.pi sun[2]=-sun[2] --计算太阳真位置
-	local d=nutation(jd)  sun[1]=rad2mrad(sun[1]+d.Lon)   --补章动
-	addGxc(jd,sun)  --补周年黄经光行差
-	return sun	  --返回太阳视位置
+  local sun = earCal(jd)
+  sun[1] = sun[1] + math.pi
+  sun[2] = -sun[2] --计算太阳真位置
+  local d = nutation(jd)
+  sun[1] = rad2mrad(sun[1] + d.Lon) --补章动
+  addGxc(jd, sun) --补周年黄经光行差
+  return sun --返回太阳视位置
 end
 
 --==================月位置计算===================
-local MnnT=0 --调用Mnn前先设置MnnT时间变量
+local MnnT = 0 --调用Mnn前先设置MnnT时间变量
 local function Mnn(F) --计算M10,M11,M20等,计算前先设置MnnT时间
-	local i
-	local  v=0
-	local t1=MnnT
-	local t2=t1*t1
-	local t3=t2*t1
-	local t4=t3*t1
-	for i=1,#F,6 do
-		v=v+F[i]*math.sin(F[i+1] +t1*F[i+2] +t2*F[i+3] +t3*F[i+4] +t4*F[i+5])
-	end
-	return v
+  local i
+  local v = 0
+  local t1 = MnnT
+  local t2 = t1 * t1
+  local t3 = t2 * t1
+  local t4 = t3 * t1
+  for i = 1, #F, 6 do
+    v = v + F[i] * math.sin(F[i + 1] + t1 * F[i + 2] + t2 * F[i + 3] + t3 * F[i + 4] + t4 * F[i + 5])
+  end
+  return v
 end
 
-local function moonCal(jd)--返回月球位置,返回地心Date黄道坐标
-	MnnT=jd/36525
-	local t1=MnnT
-	local t2=t1*t1
-	local t3=t2*t1
-	local t4=t3*t1
-	local llr={}
-	llr[1] =(Mnn(M10) +Mnn(M11)*t1 +Mnn(M12)*t2)/rad
-	llr[2] =(Mnn(M20) +Mnn(M21)*t1)/rad
-	llr[3] =(Mnn(M30) +Mnn(M31)*t1)*0.999999949827
-	llr[1] =llr[1] +M1n[1] +M1n[2]*t1 +M1n[3]*t2 +M1n[4]*t3 +M1n[5]*t4
-	llr[1] =rad2mrad(llr[1]) --地心Date黄道原点坐标(不含岁差)
-	addPrece(jd,llr) --补岁差
-	return llr
+local function moonCal(jd) --返回月球位置,返回地心Date黄道坐标
+  MnnT = jd / 36525
+  local t1 = MnnT
+  local t2 = t1 * t1
+  local t3 = t2 * t1
+  local t4 = t3 * t1
+  local llr = {}
+  llr[1] = (Mnn(M10) + Mnn(M11) * t1 + Mnn(M12) * t2) / rad
+  llr[2] = (Mnn(M20) + Mnn(M21) * t1) / rad
+  llr[3] = (Mnn(M30) + Mnn(M31) * t1) * 0.999999949827
+  llr[1] = llr[1] + M1n[1] + M1n[2] * t1 + M1n[3] * t2 + M1n[4] * t3 + M1n[5] * t4
+  llr[1] = rad2mrad(llr[1]) --地心Date黄道原点坐标(不含岁差)
+  addPrece(jd, llr) --补岁差
+  return llr
 end
 
 local function moonCal2(jd) --传回月球的地心视黄经及视黄纬
-	local moon=moonCal(jd)
-	local d=nutation(jd)
-	moon[1]=rad2mrad(moon[1]+d.Lon) --补章动
-	return moon
+  local moon = moonCal(jd)
+  local d = nutation(jd)
+  moon[1] = rad2mrad(moon[1] + d.Lon) --补章动
+  return moon
 end
 
 local function moonCal3(jd) --传回月球的地心视赤经及视赤纬
-	local moon=moonCal(jd)
-	HCconv(moon,hcjj1(jd))
-	nutationRaDec(jd,moon) --补赤经及赤纬章动
-	--如果黄赤转换前补了黄经章动及交章动,就不能再补赤经赤纬章动
-	return moon
+  local moon = moonCal(jd)
+  HCconv(moon, hcjj1(jd))
+  nutationRaDec(jd, moon) --补赤经及赤纬章动
+  --如果黄赤转换前补了黄经章动及交章动,就不能再补赤经赤纬章动
+  return moon
 end
 
 --==================地心坐标中的日月位置计算===================
-local function jiaoCai(lx,t,jiao)
-	--lx=1时计算t时刻日月角距与jiao的差, lx=0计算t时刻太阳黄经与jiao的差
-	local sun=earCal(t)  --计算太阳真位置(先算出日心坐标中地球的位置)
-	sun[1]=sun[1] + math.pi sun[2]=-sun[2] --转为地心坐标
-	addGxc(t,sun)	  --补周年光行差
-	--print('sun[1]=' .. sun[1], 'sun[2]=' .. sun[2])
-	if lx==0 then
-		local d=nutation(t)
-		sun[1]=sun[1] + d.Lon --补黄经章动
-		return rad2mrad(jiao-sun[1])
-	end
-	local moon=moonCal(t) --日月角差与章动无关
-	return rad2mrad(jiao-(moon[1]-sun[1]))
+local function jiaoCai(lx, t, jiao)
+  --lx=1时计算t时刻日月角距与jiao的差, lx=0计算t时刻太阳黄经与jiao的差
+  local sun = earCal(t) --计算太阳真位置(先算出日心坐标中地球的位置)
+  sun[1] = sun[1] + math.pi
+  sun[2] = -sun[2] --转为地心坐标
+  addGxc(t, sun) --补周年光行差
+  --print('sun[1]=' .. sun[1], 'sun[2]=' .. sun[2])
+  if lx == 0 then
+    local d = nutation(t)
+    sun[1] = sun[1] + d.Lon --补黄经章动
+    return rad2mrad(jiao - sun[1])
+  end
+  local moon = moonCal(t) --日月角差与章动无关
+  return rad2mrad(jiao - (moon[1] - sun[1]))
 end
 
 --==================已知位置反求时间===================
-local function jiaoCal(t1,jiao,lx) --t1是J2000起算儒略日数
-	--已知角度(jiao)求时间(t)
-	--lx=0是太阳黄经达某角度的时刻计算(用于节气计算)
-	--lx=1是日月角距达某角度的时刻计算(用于定朔望等)
-	--传入的t1是指定角度对应真时刻t的前一些天
-	--对于节气计算,应满足t在t1到t1+360天之间,对于Y年第n个节气(n=0是春分),t1可取值Y*365.2422+n*15.2
-	--对于朔望计算,应满足t在t1到t1+25天之间,在此范围之外,求右边的根
-	local t2=t1
-	local t=0
-	local v
-	if lx==0 then  t2=t2+360  --在t1到t2范围内求解(范气360天范围),结果置于t
-	else t2=t2+25
-	end
-	jiao=jiao*math.pi/180  --待搜索目标角
-	--利用截弦法计算
-	--print('lx=' .. lx .. ', t1=' .. t1 .. ', t2=' .. t2 .. ', jiao=' .. jiao)
-	local v1=jiaoCai(lx,t1,jiao)		   --v1,v2为t1,t2时对应的黄经
-	local v2=jiaoCai(lx,t2,jiao)
-	--print('v1=' .. v1 .. ', v2=' ..v2)
-	if v1<v2 then v2=v2 - 2*math.pi end  --减2pi作用是将周期性角度转为连续角度
-	local k=1,k2,i  --k是截弦的斜率
-	for i=1,10 do	   --快速截弦求根,通常截弦三四次就已达所需精度
-		k2=(v2-v1)/(t2-t1)	--算出斜率
-		if math.abs(k2)>1e-15 then k=k2  end   --差商可能为零,应排除
-		t=t1-v1/k  v=jiaoCai(lx,t,jiao)--直线逼近法求根(直线方程的根)
-		if v>1 then	 v=v-2*math.pi end		--一次逼近后,v1就已接近0,如果很大,则应减1周
-		if math.abs(v)<1e-8 then  break  end	 --已达精度
-		t1=t2 v1=v2 t2=t v2=v		  --下一次截弦
-	end
-	return t
+local function jiaoCal(t1, jiao, lx) --t1是J2000起算儒略日数
+  --已知角度(jiao)求时间(t)
+  --lx=0是太阳黄经达某角度的时刻计算(用于节气计算)
+  --lx=1是日月角距达某角度的时刻计算(用于定朔望等)
+  --传入的t1是指定角度对应真时刻t的前一些天
+  --对于节气计算,应满足t在t1到t1+360天之间,对于Y年第n个节气(n=0是春分),t1可取值Y*365.2422+n*15.2
+  --对于朔望计算,应满足t在t1到t1+25天之间,在此范围之外,求右边的根
+  local t2 = t1
+  local t = 0
+  local v
+  if lx == 0 then
+    t2 = t2 + 360 --在t1到t2范围内求解(范气360天范围),结果置于t
+  else
+    t2 = t2 + 25
+  end
+  jiao = jiao * math.pi / 180 --待搜索目标角
+  --利用截弦法计算
+  --print('lx=' .. lx .. ', t1=' .. t1 .. ', t2=' .. t2 .. ', jiao=' .. jiao)
+  local v1 = jiaoCai(lx, t1, jiao) --v1,v2为t1,t2时对应的黄经
+  local v2 = jiaoCai(lx, t2, jiao)
+  --print('v1=' .. v1 .. ', v2=' ..v2)
+  if v1 < v2 then
+    v2 = v2 - 2 * math.pi
+  end --减2pi作用是将周期性角度转为连续角度
+  local k = 1, k2, i --k是截弦的斜率
+  for i = 1, 10 do --快速截弦求根,通常截弦三四次就已达所需精度
+    k2 = (v2 - v1) / (t2 - t1) --算出斜率
+    if math.abs(k2) > 1e-15 then
+      k = k2
+    end --差商可能为零,应排除
+    t = t1 - v1 / k
+    v = jiaoCai(lx, t, jiao) --直线逼近法求根(直线方程的根)
+    if v > 1 then
+      v = v - 2 * math.pi
+    end --一次逼近后,v1就已接近0,如果很大,则应减1周
+    if math.abs(v) < 1e-8 then
+      break
+    end --已达精度
+    t1 = t2
+    v1 = v2
+    t2 = t
+    v2 = v --下一次截弦
+  end
+  return t
 end
 
 --==================节气计算===================
-local jqB={ --节气表
+-- stylua: ignore
+local jqB = { --节气表
 "春分","清明","谷雨","立夏","小满","芒种","夏至","小暑","大暑","立秋","处暑","白露",
-"秋分","寒露","霜降","立冬","小雪","大雪","冬至","小寒","大寒","立春","雨水","惊蛰"}
+"秋分","寒露","霜降","立冬","小雪","大雪","冬至","小寒","大寒","立春","雨水","惊蛰"
+}
 
 local function JQtest(y) --节气使计算范例,y是年分,这是个测试函数
-	local i,q,s1,s2  y=tostring(y)
-	local jd=365.2422*(tonumber(y.sub(y,1,4))-2000)
-	for i=0,23 do
-		q=jiaoCal(jd+i*15.2,i*15,0)+J2000+8/24  --计算第i个节气(i=0是春分),结果转为北京时
-		--print('q=' .. q)
-		JDate:setFromJD(q,1)  s1=JDate:toStr()  --将儒略日转成世界时
-		JDate:setFromJD(q,0)  s2=JDate:toStr()  --将儒略日转成日期格式(输出日期形式的力学时)
-		jqData=s1.sub(s1.gsub(s1, "^( )", ""),1,10)  jqData=jqData.gsub(jqData, "-", "")
-		--print(jqB[i+1] .. " : " .. jqData .. " " .. jqData.len(jqData) ) --显示
-		if (jqData == y) then return "-" .. jqB[i+1] end
-	end
-	return ""
+  local i, q, s1, s2
+  y = tostring(y)
+  local jd = 365.2422 * (tonumber(y.sub(y, 1, 4)) - 2000)
+  for i = 0, 23 do
+    q = jiaoCal(jd + i * 15.2, i * 15, 0) + J2000 + 8 / 24 --计算第i个节气(i=0是春分),结果转为北京时
+    --print('q=' .. q)
+    JDate:setFromJD(q, 1)
+    s1 = JDate:toStr() --将儒略日转成世界时
+    JDate:setFromJD(q, 0)
+    s2 = JDate:toStr() --将儒略日转成日期格式(输出日期形式的力学时)
+    jqData = s1.sub(s1.gsub(s1, "^( )", ""), 1, 10)
+    jqData = jqData.gsub(jqData, "-", "")
+    --print(jqB[i+1] .. " : " .. jqData .. " " .. jqData.len(jqData) ) --显示
+    if jqData == y then
+      return "-" .. jqB[i + 1]
+    end
+  end
+  return ""
 end
 
 local function GetNextJQ(y) --节气使计算范例,y是年分,这是个测试函数
-	local i,obj,q,s1,s2  y=tostring(y)
-	local jd=365.2422*(tonumber(y.sub(y,1,4))-2000)
-	obj={}
-	for i=0,23 do
-		q=jiaoCal(jd+i*15.2,i*15,0)+J2000+8/24  --计算第i个节气(i=0是春风),结果转为北京时
-		--print('q=' .. q)
-		JDate:setFromJD(q,1)  s1=JDate:toStr()  --将儒略日转成世界时
-		JDate:setFromJD(q,0)  s2=JDate:toStr()  --将儒略日转成日期格式(输出日期形式的力学时)
-		jqData=s1.sub(s1.gsub(s1, "^( )", ""),1,10)  jqData=jqData.gsub(jqData, "-", "")
-		if (jqData>=y) then
-			table.insert(obj,jqB[i+1] .." ".. s1.sub(s1.gsub(s1, "^( )", ""),1,10))
-			--print(i .. s1.sub(s1.gsub(s1, "^( )", ""),1,10))
-	  end
-
-	end
-	return obj
+  local i, obj, q, s1, s2
+  y = tostring(y)
+  local jd = 365.2422 * (tonumber(y.sub(y, 1, 4)) - 2000)
+  obj = {}
+  for i = 0, 23 do
+    q = jiaoCal(jd + i * 15.2, i * 15, 0) + J2000 + 8 / 24 --计算第i个节气(i=0是春风),结果转为北京时
+    --print('q=' .. q)
+    JDate:setFromJD(q, 1)
+    s1 = JDate:toStr() --将儒略日转成世界时
+    JDate:setFromJD(q, 0)
+    s2 = JDate:toStr() --将儒略日转成日期格式(输出日期形式的力学时)
+    jqData = s1.sub(s1.gsub(s1, "^( )", ""), 1, 10)
+    jqData = jqData.gsub(jqData, "-", "")
+    if jqData >= y then
+      table.insert(obj, jqB[i + 1] .. " " .. s1.sub(s1.gsub(s1, "^( )", ""), 1, 10))
+      --print(i .. s1.sub(s1.gsub(s1, "^( )", ""),1,10))
+    end
+  end
+  return obj
 end
 
 local function getJQ(y) --返回一年中各个节气的时间表，从春分开始
-	local i
-	local jd=365.2422*(y-2000)
-	local q
-	local jq = {}
-	for i=0,23 do
-		q=jiaoCal(jd+i*15.2,i*15,0)+J2000+8/24  --计算第i个节气(i=0是春分),结果转为北京时
-		JDate:setFromJD(q,1)  jq[i+1] = JDate:JQ()  --将儒略日转成世界时
-	end
-	return jq
+  local i
+  local jd = 365.2422 * (y - 2000)
+  local q
+  local jq = {}
+  for i = 0, 23 do
+    q = jiaoCal(jd + i * 15.2, i * 15, 0) + J2000 + 8 / 24 --计算第i个节气(i=0是春分),结果转为北京时
+    JDate:setFromJD(q, 1)
+    jq[i + 1] = JDate:JQ() --将儒略日转成世界时
+  end
+  return jq
 end
 
 --返回一年的二十四个节气,从立春开始
 local function getYearJQ(y)
-	local jq1 = getJQ(y-1) --上一年
-	local jq2 = getJQ(y) -- 当年
-	local jq = {}
-	for i=1,3 do jq[i] = jq1[i+21] end
-	for i=1,21 do jq[i+3] = jq2[i] end
-	return jq
+  local jq1 = getJQ(y - 1) --上一年
+  local jq2 = getJQ(y) -- 当年
+  local jq = {}
+  for i = 1, 3 do
+    jq[i] = jq1[i + 21]
+  end
+  for i = 1, 21 do
+    jq[i + 3] = jq2[i]
+  end
+  return jq
 end
 
-
 --=================定朔弦望计算========================
-local function dingSuo(y,arc) --这是个测试函数
-	local i,jd=365.2422*(y-2000),q,s1,s2
-	print("月份:世界时  原子时<br>")
-	for i=0,11 do
-		q=jiaoCal(jd+29.5*i,arc,1)+J2000+8/24	--计算第i个节气(i=0是春风),结果转为北京时
-		JDate.setFromJD(q,1)  s1=JDate:toStr()  --将儒略日转成世界时
-		JDate.setFromJD(q,0)  s2=JDate:toStr()  --将儒略日转成日期格式(输出日期形式的力学时)
-		print((i+1) .. "月 : ".. s1 .. " " .. s2 ) --显示
-	end
+local function dingSuo(y, arc) --这是个测试函数
+  local i, jd = 365.2422 * (y - 2000), q, s1, s2
+  print("月份:世界时  原子时<br>")
+  for i = 0, 11 do
+    q = jiaoCal(jd + 29.5 * i, arc, 1) + J2000 + 8 / 24 --计算第i个节气(i=0是春风),结果转为北京时
+    JDate.setFromJD(q, 1)
+    s1 = JDate:toStr() --将儒略日转成世界时
+    JDate.setFromJD(q, 0)
+    s2 = JDate:toStr() --将儒略日转成日期格式(输出日期形式的力学时)
+    print((i + 1) .. "月 : " .. s1 .. " " .. s2) --显示
+  end
 end
 
 --=================农历计算========================
@@ -614,7 +769,6 @@ end
 如果"建子",0月为首月,如果"建寅",2月的月名"正月",3月是"二月",其余类推
 *****--]]
 
-
 --local yueMing={"正","二","三","四","五","六","七","八","九","十","冬","腊"}
 --
 --function paiYue(inYear) --农历排月序计算,可定出农历
@@ -632,34 +786,44 @@ end
 --end
 
 local function GetNowTimeJq(date)
-	local JQtable1,JQtable2
-	date=tostring(date)
-	if string.len(date)<8 then return "无效日期" end
-	JQtable2=GetNextJQ(date)
-	if tonumber(string.sub(date,5,8))<322 then
-		JQtable1=GetNextJQ(tonumber(string.sub(date,1,4))-1 .. string.sub(date,5,8))
-		--print(#JQtable1)
-		if tonumber(string.sub(date,5,8))<108 then 
-			for i=20,24 do table.insert(JQtable2,i-19,JQtable1[i]) end
-		elseif tonumber(string.sub(date,5,8))<122 then
-			for i=21,24 do table.insert(JQtable2,i-20,JQtable1[i]) end
-		elseif tonumber(string.sub(date,5,8))<206 then
-			for i=22,24 do table.insert(JQtable2,i-21,JQtable1[i]) end
-		elseif tonumber(string.sub(date,5,8))<221 then
-			for i=23,24 do table.insert(JQtable2,i-22,JQtable1[i]) end
-		else
-			table.insert(JQtable2,1,JQtable1[24])
-		end
-		--print(table.concat(JQtable2))
-	end
-	return JQtable2
+  local JQtable1, JQtable2
+  date = tostring(date)
+  if string.len(date) < 8 then
+    return "无效日期"
+  end
+  JQtable2 = GetNextJQ(date)
+  if tonumber(string.sub(date, 5, 8)) < 322 then
+    JQtable1 = GetNextJQ(tonumber(string.sub(date, 1, 4)) - 1 .. string.sub(date, 5, 8))
+    --print(#JQtable1)
+    if tonumber(string.sub(date, 5, 8)) < 108 then
+      for i = 20, 24 do
+        table.insert(JQtable2, i - 19, JQtable1[i])
+      end
+    elseif tonumber(string.sub(date, 5, 8)) < 122 then
+      for i = 21, 24 do
+        table.insert(JQtable2, i - 20, JQtable1[i])
+      end
+    elseif tonumber(string.sub(date, 5, 8)) < 206 then
+      for i = 22, 24 do
+        table.insert(JQtable2, i - 21, JQtable1[i])
+      end
+    elseif tonumber(string.sub(date, 5, 8)) < 221 then
+      for i = 23, 24 do
+        table.insert(JQtable2, i - 22, JQtable1[i])
+      end
+    else
+      table.insert(JQtable2, 1, JQtable1[24])
+    end
+    --print(table.concat(JQtable2))
+  end
+  return JQtable2
 end
 
-local function main()
-	print(GetNowTimeJq("20210101"))
-	--print(JQtest("20210323")) --测试函数
-	--print(table.concat(GetNextJQ("20210101")))
-end
+-- local function main()
+--   print(GetNowTimeJq("20210101"))
+--   --print(JQtest("20210323")) --测试函数
+--   --print(table.concat(GetNextJQ("20210101")))
+-- end
 
 --main()
 return { JQtest = JQtest, getYearJQ = getYearJQ, GetNowTimeJq = GetNowTimeJq }

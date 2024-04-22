@@ -1,6 +1,6 @@
 local function detect_os()
   local sys = ""
-  local sep = package.config:sub(1,1)
+  local sep = package.config:sub(1, 1)
   if sep == "\\" then
     sys = "Windows"
   else
@@ -54,7 +54,9 @@ local function select_index(env, key)
   local select_keys = env.engine.schema.select_keys
   if select_keys ~= nil and select_keys ~= "" and not key.ctrl() and ch >= 0x20 and ch < 0x7f then
     local pos = string.find(select_keys, string.char(ch))
-    if pos ~= nil then index = pos end
+    if pos ~= nil then
+      index = pos
+    end
   elseif ch >= 0x30 and ch <= 0x39 then
     index = (ch - 0x30 + 9) % 10
   elseif ch >= 0xffb0 and ch < 0xffb9 then
@@ -67,7 +69,9 @@ end
 
 local function apply_switch(env, keyword, target_state)
   local switcher = env.switcher
-  if switcher == nil then return end
+  if switcher == nil then
+    return
+  end
   local ctx = env.engine.context
   local user_config = switcher.user_config
   ctx:set_option(keyword, target_state)
@@ -83,7 +87,7 @@ return {
     get_bool = get_option_bool,
     get_int = get_option_int,
     get_double = get_option_double,
-    get_string = get_option_string
+    get_string = get_option_string,
   },
   select_index = select_index,
   apply_switch = apply_switch,

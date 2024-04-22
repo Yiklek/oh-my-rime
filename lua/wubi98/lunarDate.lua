@@ -5,107 +5,145 @@
 
 --十进制转二进制
 local function Dec2bin(n)
-	local t,t1,t2
-	local tables={""}
-	t=tonumber(n)
-	while math.floor(t/2)>=1 do
-		t1= math.fmod(t,2)
-		if t1>0 then if #tables>0 then table.insert(tables,1,1) else tables[1]=1 end else if #tables>0 then table.insert(tables,1,0) else tables[1]=0 end end
-		t=math.floor(t/2)
-		if t==1 then if #tables>0 then table.insert(tables,1,1) else tables[1]=1 end end
-	end
-	return string.gsub(table.concat(tables),"^[0]+","")
+  local t, t1, t2
+  local tables = { "" }
+  t = tonumber(n)
+  while math.floor(t / 2) >= 1 do
+    t1 = math.fmod(t, 2)
+    if t1 > 0 then
+      if #tables > 0 then
+        table.insert(tables, 1, 1)
+      else
+        tables[1] = 1
+      end
+    else
+      if #tables > 0 then
+        table.insert(tables, 1, 0)
+      else
+        tables[1] = 0
+      end
+    end
+    t = math.floor(t / 2)
+    if t == 1 then
+      if #tables > 0 then
+        table.insert(tables, 1, 1)
+      else
+        tables[1] = 1
+      end
+    end
+  end
+  return string.gsub(table.concat(tables), "^[0]+", "")
 end
 
 --2/10/16进制互转
-local function system(x,inPuttype,outputtype)
-	local r
-	if (tonumber(inPuttype)==2) then
-		if (tonumber(outputtype) == 10) then  --2进制-->10进制
-			r= tonumber(tostring(x), 2)
-		elseif (tonumber(outputtype)==16) then  --2进制-->16进制
-			r= bin2hex(tostring(x))
-		end
-	elseif (tonumber(inPuttype)==10) then
-		if (tonumber(outputtype)==2) then   --10进制-->2进制
-			r= Dec2bin(tonumber(x))
-		elseif (tonumber(outputtype)==16) then  --10进制-->16进制
-			r= string.format("%x",x)
-		end
-	elseif (tonumber(inPuttype)==16) then
-		if (tonumber(outputtype)==2) then  --16进制-->2进制
-			r= Dec2bin(tonumber(tostring(x), 16))
-		elseif (tonumber(outputtype)==10) then  --16进制-->10进制
-			r= tonumber(tostring(x), 16)
-		end
-	end
-	return r
+local function system(x, inPuttype, outputtype)
+  local r
+  if tonumber(inPuttype) == 2 then
+    if tonumber(outputtype) == 10 then --2进制-->10进制
+      r = tonumber(tostring(x), 2)
+    elseif tonumber(outputtype) == 16 then --2进制-->16进制
+      r = bin2hex(tostring(x))
+    end
+  elseif tonumber(inPuttype) == 10 then
+    if tonumber(outputtype) == 2 then --10进制-->2进制
+      r = Dec2bin(tonumber(x))
+    elseif tonumber(outputtype) == 16 then --10进制-->16进制
+      r = string.format("%x", x)
+    end
+  elseif tonumber(inPuttype) == 16 then
+    if tonumber(outputtype) == 2 then --16进制-->2进制
+      r = Dec2bin(tonumber(tostring(x), 16))
+    elseif tonumber(outputtype) == 10 then --16进制-->10进制
+      r = tonumber(tostring(x), 16)
+    end
+  end
+  return r
 end
 
 --农历16进制数据分解
 local function Analyze(Data)
-	local rtn1,rtn2,rtn3,rtn4
-	rtn1=system(string.sub(Data,1,3),16,2)
-	if string.len(rtn1)<12 then rtn1="0" .. rtn1 end
-	rtn2=string.sub(Data,4,4)
-	rtn3=system(string.sub(Data,5,5),16,10)
-	rtn4=system(string.sub(Data,-2,-1),16,10)
-	if string.len(rtn4)==3 then rtn4="0" .. system(string.sub(Data,-2,-1),16,10) end
-	--string.gsub(rtn1, "^[0]*", "")
-	return {rtn1,rtn2,rtn3,rtn4}
+  local rtn1, rtn2, rtn3, rtn4
+  rtn1 = system(string.sub(Data, 1, 3), 16, 2)
+  if string.len(rtn1) < 12 then
+    rtn1 = "0" .. rtn1
+  end
+  rtn2 = string.sub(Data, 4, 4)
+  rtn3 = system(string.sub(Data, 5, 5), 16, 10)
+  rtn4 = system(string.sub(Data, -2, -1), 16, 10)
+  if string.len(rtn4) == 3 then
+    rtn4 = "0" .. system(string.sub(Data, -2, -1), 16, 10)
+  end
+  --string.gsub(rtn1, "^[0]*", "")
+  return { rtn1, rtn2, rtn3, rtn4 }
 end
 
 --年天数判断
 local function IsLeap(y)
-	local year=tonumber(y)
-	if math.fmod(year,400)~=0 and math.fmod(year,4)==0 or math.fmod(year,400)==0 then return 366
-	else return 365 end
+  local year = tonumber(y)
+  if math.fmod(year, 400) ~= 0 and math.fmod(year, 4) == 0 or math.fmod(year, 400) == 0 then
+    return 366
+  else
+    return 365
+  end
 end
 
 --计算日期差，两个8位数日期之间相隔的天数，date2>date1
-local function diffDate(date1,date2)
-	local t1,t2,n,total
-	total=0 date1=tostring(date1) date2=tostring(date2)
-	if tonumber(date2)>tonumber(date1) then
-		n=tonumber(string.sub(date2,1,4))-tonumber(string.sub(date1,1,4))
-		if n>1 then
-			for i=1,n-1 do
-				total=total+IsLeap(tonumber(string.sub(date1,1,4))+i)
-			end
-			total=total+leaveDate(tonumber(string.sub(date2,1,8)))+IsLeap(tonumber(string.sub(date1,1,4)))-leaveDate(tonumber(string.sub(date1,1,8)))
-		elseif n==1 then
-			total=IsLeap(tonumber(string.sub(date1,1,4)))-leaveDate(tonumber(string.sub(date1,1,8)))+leaveDate(tonumber(string.sub(date2,1,8)))
-		else
-			total=leaveDate(tonumber(string.sub(date2,1,8)))-leaveDate(tonumber(string.sub(date1,1,8)))
-			--print(date1 .. "-" .. date2)
-		end
-	elseif tonumber(date2)==tonumber(date1) then
-		return 0
-	else
-		return -1
-	end
-	return total
+local function diffDate(date1, date2)
+  local t1, t2, n, total
+  total = 0
+  date1 = tostring(date1)
+  date2 = tostring(date2)
+  if tonumber(date2) > tonumber(date1) then
+    n = tonumber(string.sub(date2, 1, 4)) - tonumber(string.sub(date1, 1, 4))
+    if n > 1 then
+      for i = 1, n - 1 do
+        total = total + IsLeap(tonumber(string.sub(date1, 1, 4)) + i)
+      end
+      total = total
+        + leaveDate(tonumber(string.sub(date2, 1, 8)))
+        + IsLeap(tonumber(string.sub(date1, 1, 4)))
+        - leaveDate(tonumber(string.sub(date1, 1, 8)))
+    elseif n == 1 then
+      total = IsLeap(tonumber(string.sub(date1, 1, 4)))
+        - leaveDate(tonumber(string.sub(date1, 1, 8)))
+        + leaveDate(tonumber(string.sub(date2, 1, 8)))
+    else
+      total = leaveDate(tonumber(string.sub(date2, 1, 8))) - leaveDate(tonumber(string.sub(date1, 1, 8)))
+      --print(date1 .. "-" .. date2)
+    end
+  elseif tonumber(date2) == tonumber(date1) then
+    return 0
+  else
+    return -1
+  end
+  return total
 end
 
 --返回当年过了多少天
 local function leaveDate(y)
-	local day,total
-	total=0
-	if IsLeap(tonumber(string.sub(y,1,4)))>365 then day={31,29,31,30,31,30,31,31,30,31,30,31}
-	else day={31,28,31,30,31,30,31,31,30,31,30,31} end
-	if tonumber(string.sub(y,5,6))>1 then
-		for i=1,tonumber(string.sub(y,5,6))-1 do total=total+day[i] end
-		total=total+tonumber(string.sub(y,7,8))
-	else
-		return tonumber(string.sub(y,7,8))
-	end
-	return tonumber(total)
+  local day, total
+  total = 0
+  if IsLeap(tonumber(string.sub(y, 1, 4))) > 365 then
+    day = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+  else
+    day = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+  end
+  if tonumber(string.sub(y, 5, 6)) > 1 then
+    for i = 1, tonumber(string.sub(y, 5, 6)) - 1 do
+      total = total + day[i]
+    end
+    total = total + tonumber(string.sub(y, 7, 8))
+  else
+    return tonumber(string.sub(y, 7, 8))
+  end
+  return tonumber(total)
 end
 
 --公历转农历，支持转化范围公元1900-2100年
 --公历日期 Gregorian:格式 YYYYMMDD
 --<返回值>农历日期 中文 天干地支属相
 local function Date2LunarDate(Gregorian)
+    -- stylua: ignore start
 	--天干名称
 	local cTianGan = {"甲","乙","丙","丁","戊","己","庚","辛","壬","癸"}
 	--地支名称
@@ -200,46 +238,65 @@ end
 
 --Date日期参数格式YYMMDD，dayCount累加的天数
 --返回值：公历日期
-local function GettotalDay(Date,dayCount)
-	local Year,Month,Day,days,total,t
-	Date=tostring(Date)
-	Year=tonumber(Date.sub(Date,1,4))
-	Month=tonumber(Date.sub(Date,5,6))
-	Day=tonumber(Date.sub(Date,7,8))
-	if IsLeap(Year)>365 then days={31,29,31,30,31,30,31,31,30,31,30,31}
-	else days={31,28,31,30,31,30,31,31,30,31,30,31} end
-	if dayCount>days[Month]-Day then
-		total=dayCount-days[Month]+Day Month=Month+1
-		if Month>12 then Month=Month-12 Year=Year+1 end
-		for i=Month,12+Month do
-			if IsLeap(Year)>365 then days={31,29,31,30,31,30,31,31,30,31,30,31}
-			else days={31,28,31,30,31,30,31,31,30,31,30,31} end
-			if i>11 then t=i-12 else t=i end
-			--print("<" ..i ..">" ..days[t+1] .. "-".. t+1)
-			if (total>days[t+1]) then
-				total=total-days[Month]
-				Month=Month+1
-				if Month>12 then Month=Month-12 Year=Year+1 end
-				--print(Month .. "-" ..days[Month])
-				--print(Year .. Month .. total)
-			else
-				break
-			end
-		end
-	else
-		total=Day+dayCount
-	end
-	--if string.len(Month)==1 then Month="0"..Month end
-	--if string.len(total)==1 then total="0"..total end
-	return Year .. "年" .. Month .. "月" .. total .. "日"
+local function GettotalDay(Date, dayCount)
+  local Year, Month, Day, days, total, t
+  Date = tostring(Date)
+  Year = tonumber(Date.sub(Date, 1, 4))
+  Month = tonumber(Date.sub(Date, 5, 6))
+  Day = tonumber(Date.sub(Date, 7, 8))
+  if IsLeap(Year) > 365 then
+    days = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+  else
+    days = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+  end
+  if dayCount > days[Month] - Day then
+    total = dayCount - days[Month] + Day
+    Month = Month + 1
+    if Month > 12 then
+      Month = Month - 12
+      Year = Year + 1
+    end
+    for i = Month, 12 + Month do
+      if IsLeap(Year) > 365 then
+        days = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+      else
+        days = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+      end
+      if i > 11 then
+        t = i - 12
+      else
+        t = i
+      end
+      --print("<" ..i ..">" ..days[t+1] .. "-".. t+1)
+      if total > days[t + 1] then
+        total = total - days[Month]
+        Month = Month + 1
+        if Month > 12 then
+          Month = Month - 12
+          Year = Year + 1
+        end
+        --print(Month .. "-" ..days[Month])
+        --print(Year .. Month .. total)
+      else
+        break
+      end
+    end
+  else
+    total = Day + dayCount
+  end
+  --if string.len(Month)==1 then Month="0"..Month end
+  --if string.len(total)==1 then total="0"..total end
+  return Year .. "年" .. Month .. "月" .. total .. "日"
 end
 
 --农历转公历
 --农历 Gregorian:数字格式 YYYYMMDD
 --<返回值>公历日期 格式YYYY年MM月DD日
 --农历日期月份为闰月需指定参数IsLeap为1，非闰月需指定参数IsLeap为0
-local function LunarDate2Date(Gregorian,IsLeap)
-	LunarData={"AB500D2","4BD0883",
+local function LunarDate2Date(Gregorian, IsLeap)
+    -- stylua: ignore
+	LunarData={
+        "AB500D2","4BD0883",
 		"4AE00DB","A5700D0","54D0581","D2600D8","D9500CC","655147D","56A00D5","9AD00CA","55D027A","4AE00D2",
 		"A5B0682","A4D00DA","D2500CE","D25157E","B5500D6","56A00CC","ADA027B","95B00D3","49717C9","49B00DC",
 		"A4B00D0","B4B0580","6A500D8","6D400CD","AB5147C","2B600D5","95700CA","52F027B","49700D2","6560682",
@@ -261,57 +318,66 @@ local function LunarDate2Date(Gregorian,IsLeap)
 		"69300D1","7330781","6AA00D9","AD500CE","4B5157E","4B600D6","A5700CB","54E047C","D1600D2","E960882",
 		"D5200DA","DAA00CF","6AA167F","56D00D7","4AE00CD","A9D047D","A2D00D4","D1500C9","F250279","D5200D1"
 	}
-	Gregorian=tostring(Gregorian)
-	local Year,Month,Day,Pos,Data,MonthInfo,LeapInfo,Leap,Newyear,Sum,thisMonthInfo,GDate
-	Year=tonumber(Gregorian.sub(Gregorian,1,4))  Month=tonumber(Gregorian.sub(Gregorian,5,6))
-	Day=tonumber(Gregorian.sub(Gregorian,7,8))
-	if (Year>2100 or Year<1900 or Month>12 or Month<1 or Day>30 or Day<1 or string.len(Gregorian)<8) then
-		return "无效日期"
-	end
+  Gregorian = tostring(Gregorian)
+  local Year, Month, Day, Pos, Data, MonthInfo, LeapInfo, Leap, Newyear, Sum, thisMonthInfo, GDate
+  Year = tonumber(Gregorian.sub(Gregorian, 1, 4))
+  Month = tonumber(Gregorian.sub(Gregorian, 5, 6))
+  Day = tonumber(Gregorian.sub(Gregorian, 7, 8))
+  if Year > 2100 or Year < 1900 or Month > 12 or Month < 1 or Day > 30 or Day < 1 or string.len(Gregorian) < 8 then
+    return "无效日期"
+  end
 
-	--获取当年农历数据
-	Pos=(Year-1899)+1    Data=LunarData[Pos]
-	--print(Data)
-	--判断公历日期
-	local tb1=Analyze(Data)
-	MonthInfo=tb1[1]  LeapInfo=tb1[2]  Leap=tb1[3]  Newyear=tb1[4]
-	--计算到当天到当年农历新年的天数
-	Sum=0
+  --获取当年农历数据
+  Pos = (Year - 1899) + 1
+  Data = LunarData[Pos]
+  --print(Data)
+  --判断公历日期
+  local tb1 = Analyze(Data)
+  MonthInfo = tb1[1]
+  LeapInfo = tb1[2]
+  Leap = tb1[3]
+  Newyear = tb1[4]
+  --计算到当天到当年农历新年的天数
+  Sum = 0
 
-	if Leap>0 then    --有闰月
-		thisMonthInfo=string.sub(MonthInfo,1,Leap) .. LeapInfo .. string.sub(MonthInfo,Leap+1)
-		if (Leap~=Month and tonumber(IsLeap)==1) then
-			return "该月不是闰月！"
-		end
-		if (Month<=Leap and tonumber(IsLeap)==0) then
-			for i=1,Month-1 do Sum=Sum+29+string.sub(thisMonthInfo,i,i) end
-		else
-			for i=1,Month do Sum=Sum+29+string.sub(thisMonthInfo,i,i) end
-		end
-	else
-		if (tonumber(IsLeap)==1) then
-			return "该年没有闰月！"
-		end
-		for i=1,Month-1 do
-			thisMonthInfo=MonthInfo
-			Sum=Sum+29+string.sub(thisMonthInfo,i,i)
-		end
-	end
-	Sum=math.floor(Sum+Day-1)
-	GDate=Year .. Newyear
-	GDate=GettotalDay(GDate,Sum)
+  if Leap > 0 then --有闰月
+    thisMonthInfo = string.sub(MonthInfo, 1, Leap) .. LeapInfo .. string.sub(MonthInfo, Leap + 1)
+    if Leap ~= Month and tonumber(IsLeap) == 1 then
+      return "该月不是闰月！"
+    end
+    if Month <= Leap and tonumber(IsLeap) == 0 then
+      for i = 1, Month - 1 do
+        Sum = Sum + 29 + string.sub(thisMonthInfo, i, i)
+      end
+    else
+      for i = 1, Month do
+        Sum = Sum + 29 + string.sub(thisMonthInfo, i, i)
+      end
+    end
+  else
+    if tonumber(IsLeap) == 1 then
+      return "该年没有闰月！"
+    end
+    for i = 1, Month - 1 do
+      thisMonthInfo = MonthInfo
+      Sum = Sum + 29 + string.sub(thisMonthInfo, i, i)
+    end
+  end
+  Sum = math.floor(Sum + Day - 1)
+  GDate = Year .. Newyear
+  GDate = GettotalDay(GDate, Sum)
 
-	return GDate
+  return GDate
 end
 
-local function main()
-	print(LunarDate2Date(20210101,0))
-	--print(19660808 .. "-" ..Date2LunarDate(19660808))
-	--print(20001218 .. "-" ..Date2LunarDate(20001218))
-	print(os.date("%Y%m%d") .. "-" ..Date2LunarDate(os.date("%Y%m%d")))
-	--print(20200525 .. "-" ..Date2LunarDate(20200525))
-	--print(20220105 .. "-" ..Date2LunarDate(20220105))
-	--print(20350129 .. "-" ..Date2LunarDate(20350129))
-end
-return {Date2LunarDate = Date2LunarDate, LunarDate2Date = LunarDate2Date}
+-- local function main()
+--   print(LunarDate2Date(20210101, 0))
+--   --print(19660808 .. "-" ..Date2LunarDate(19660808))
+--   --print(20001218 .. "-" ..Date2LunarDate(20001218))
+--   print(os.date("%Y%m%d") .. "-" .. Date2LunarDate(os.date("%Y%m%d")))
+--   --print(20200525 .. "-" ..Date2LunarDate(20200525))
+--   --print(20220105 .. "-" ..Date2LunarDate(20220105))
+--   --print(20350129 .. "-" ..Date2LunarDate(20350129))
+-- end
+return { Date2LunarDate = Date2LunarDate, LunarDate2Date = LunarDate2Date }
 --main()
