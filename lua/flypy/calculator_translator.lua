@@ -27,27 +27,28 @@
 -- - 如目錄／文件不存在，請自行創建
 
 -- 定義全局函數、常數（注意命名空間污染）
-cos = math.cos
-sin = math.sin
-tan = math.tan
-acos = math.acos
-asin = math.asin
-atan = math.atan
-rad = math.rad
-deg = math.deg
+local math_env = {}
+math_env.cos = math.cos
+math_env.sin = math.sin
+math_env.tan = math.tan
+math_env.acos = math.acos
+math_env.asin = math.asin
+math_env.atan = math.atan
+math_env.rad = math.rad
+math_env.deg = math.deg
 
-abs = math.abs
-floor = math.floor
-ceil = math.ceil
-mod = math.fmod
-trunc = function(x, dc)
+math_env.abs = math.abs
+math_env.floor = math.floor
+math_env.ceil = math.ceil
+math_env.mod = math.fmod
+math_env.trunc = function(x, dc)
   if dc == nil then
     return math.modf(x)
   end
   return x - mod(x, dc)
 end
 
-round = function(x, dc)
+math_env.round = function(x, dc)
   dc = dc or 1
   local dif = mod(x, dc)
   if abs(dif) > dc / 2 then
@@ -56,23 +57,23 @@ round = function(x, dc)
   return x - dif
 end
 
-random = math.random
-randomseed = math.randomseed
+math_env.random = math.random
+math_env.randomseed = math.randomseed
 
-inf = math.huge
-MAX_INT = math.maxinteger
-MIN_INT = math.mininteger
-pi = math.pi
-sqrt = math.sqrt
-exp = math.exp
-e = exp(1)
-ln = math.log
-log = function(x, base)
+math_env.inf = math.huge
+math_env.MAX_INT = math.maxinteger
+math_env.MIN_INT = math.mininteger
+math_env.pi = math.pi
+math_env.sqrt = math.sqrt
+math_env.exp = math.exp
+math_env.e = math.exp(1)
+math_env.ln = math.log
+math_env.log = function(x, base)
   base = base or 10
   return ln(x) / ln(base)
 end
 
-min = function(arr)
+math_env.min = function(arr)
   local m = inf
   for k, x in ipairs(arr) do
     m = x < m and x or m
@@ -80,7 +81,7 @@ min = function(arr)
   return m
 end
 
-max = function(arr)
+math_env.max = function(arr)
   local m = -inf
   for k, x in ipairs(arr) do
     m = x > m and x or m
@@ -88,7 +89,7 @@ max = function(arr)
   return m
 end
 
-sum = function(t)
+math_env.sum = function(t)
   local acc = 0
   for k, v in ipairs(t) do
     acc = acc + v
@@ -96,16 +97,18 @@ sum = function(t)
   return acc
 end
 
-avg = function(t)
+math_env.avg = function(t)
   return sum(t) / #t
 end
 
-isinteger = function(x)
+local isinteger = function(x)
   return math.fmod(x, 1) == 0
 end
 
+math_env.isinteger = isinteger
+
 -- iterator . array
-array = function(...)
+math_env.array = function(...)
   local arr = {}
   for v in ... do
     arr[#arr + 1] = v
@@ -114,7 +117,7 @@ array = function(...)
 end
 
 -- iterator <- [form, to)
-irange = function(from, to, step)
+math_env.irange = function(from, to, step)
   if to == nil then
     to = from
     from = 0
@@ -131,12 +134,12 @@ irange = function(from, to, step)
 end
 
 -- array <- [form, to)
-range = function(from, to, step)
+math_env.range = function(from, to, step)
   return array(irange(from, to, step))
 end
 
 -- array . reversed iterator
-irev = function(arr)
+math_env.irev = function(arr)
   local i = #arr + 1
   return function()
     if i > 1 then
@@ -147,11 +150,11 @@ irev = function(arr)
 end
 
 -- array . reversed array
-arev = function(arr)
+math_env.arev = function(arr)
   return array(irev(arr))
 end
 
-test = function(f, t)
+math_env.test = function(f, t)
   for k, v in ipairs(t) do
     if not f(v) then
       return false
@@ -161,7 +164,7 @@ test = function(f, t)
 end
 
 -- # Functional
-map = function(t, ...)
+math_env.map = function(t, ...)
   local ta = {}
   for k, v in pairs(t) do
     local tmp = v
@@ -173,7 +176,7 @@ map = function(t, ...)
   return ta
 end
 
-filter = function(t, ...)
+math_env.filter = function(t, ...)
   local ta = {}
   local i = 1
   for k, v in pairs(t) do
@@ -193,7 +196,7 @@ filter = function(t, ...)
 end
 
 -- e.g: foldr({2,3},\n,x.x^n|,2) = 81
-foldr = function(t, f, acc)
+math_env.foldr = function(t, f, acc)
   for k, v in pairs(t) do
     acc = f(acc, v)
   end
@@ -201,7 +204,7 @@ foldr = function(t, f, acc)
 end
 
 -- e.g: foldl({2,3},\n,x.x^n|,2) = 512
-foldl = function(t, f, acc)
+math_env.foldl = function(t, f, acc)
   for v in irev(t) do
     acc = f(acc, v)
   end
@@ -213,7 +216,7 @@ end
 --    = floor(map(map(map(range(-5,5),\x.x/5|),sin),\x.e^x*10|))
 --    = {4, 4, 5, 6, 8, 10, 12, 14, 17, 20}
 -- 可以用 $ 代替 chain
-chain = function(t)
+math_env.chain = function(t)
   local ta = t
   local function cf(f, ...)
     if f ~= nil then
@@ -227,7 +230,7 @@ chain = function(t)
 end
 
 -- # Statistics
-fac = function(n)
+math_env.fac = function(n)
   local acc = 1
   for i = 2, n do
     acc = acc * i
@@ -235,15 +238,15 @@ fac = function(n)
   return acc
 end
 
-nPr = function(n, r)
+math_env.nPr = function(n, r)
   return fac(n) / fac(n - r)
 end
 
-nCr = function(n, r)
+math_env.nCr = function(n, r)
   return nPr(n, r) / fac(r)
 end
 
-MSE = function(t)
+math_env.MSE = function(t)
   local ss = 0
   local s = 0
   local n = #t
@@ -258,7 +261,7 @@ end
 
 -- # Calculus
 -- Linear approximation
-lapproxd = function(f, delta)
+math_env.lapproxd = function(f, delta)
   local delta = delta or 1e-8
   return function(x)
     return (f(x + delta) - f(x)) / delta
@@ -266,7 +269,7 @@ lapproxd = function(f, delta)
 end
 
 -- Symmetric approximation
-sapproxd = function(f, delta)
+math_env.sapproxd = function(f, delta)
   local delta = delta or 1e-8
   return function(x)
     return (f(x + delta) - f(x - delta)) / delta / 2
@@ -274,7 +277,7 @@ sapproxd = function(f, delta)
 end
 
 -- 近似導數
-deriv = function(f, delta, dc)
+math_env.deriv = function(f, delta, dc)
   dc = dc or 1e-4
   local fd = sapproxd(f, delta)
   return function(x)
@@ -283,7 +286,7 @@ deriv = function(f, delta, dc)
 end
 
 -- Trapezoidal rule
-trapzo = function(f, a, b, n)
+math_env.trapzo = function(f, a, b, n)
   local dif = b - a
   local acc = 0
   for i = 1, n - 1 do
@@ -295,7 +298,7 @@ trapzo = function(f, a, b, n)
 end
 
 -- 近似積分
-integ = function(f, delta, dc)
+math_env.integ = function(f, delta, dc)
   delta = delta or 1e-4
   dc = dc or 1e-4
   return function(a, b)
@@ -309,7 +312,7 @@ integ = function(f, delta, dc)
 end
 
 -- Runge-Kutta
-rk4 = function(f, timestep)
+math_env.rk4 = function(f, timestep)
   local timestep = timestep or 0.01
   return function(start_x, start_y, time)
     local x = start_x
@@ -329,13 +332,14 @@ rk4 = function(f, timestep)
 end
 
 -- # System
-date = os.date
-time = os.time
-path = function()
+math_env.date = os.date
+math_env.time = os.time
+math_env.path = function()
   return debug.getinfo(1).source:match("@?(.*/)")
 end
 
-local function serialize(obj)
+local floor = math.floor
+local serialize = function(obj)
   local type = type(obj)
   if type == "number" then
     return isinteger(obj) and floor(obj) or obj
@@ -396,8 +400,9 @@ local function calculator_translator(input, seg)
     return
   end
   -- return語句保證了只有合法的Lua表達式才可執行
-  local result = load("return " .. expe)()
+  local result = load("return " .. expe, "calculate", "bt", math_env)()
   if result == nil then
+    log.error("calculate error")
     return
   end
 

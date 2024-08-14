@@ -10,9 +10,8 @@ patch:
     - {schema: wubi98_ci}
     - {schema: wubi98_S}
     - {schema: wubi98_U}
-    - {schema: wb_spelling}
+    # - {schema: wb_spelling}
     - {schema: py}
-    - {schema: wubi98_openfly_extra}
     - schema: xkjd6cx
     - schema: xkjd6_bj
     - schema: xkjd6

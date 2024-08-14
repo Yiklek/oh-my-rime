@@ -1,5 +1,5 @@
 --[[
-switch_keyword关键字更换在rime.lua文件rv_var中
+switch_keyword关键字更换在rime.lua文件Wubi98Context.rv_var中
 须将 lua_processor@switch_processor 放在 engine/processors 里，并位于默认 selector 之前
 --]]
 
@@ -110,7 +110,7 @@ local function selector(key, env)
     local candidate_count = segment.menu:candidate_count()
     local selected_candidate = segment:get_selected_candidate() or ""
     local page_pos = math.modf(segment.selected_index / page_size) + 1
-    local trad_mode = env.engine.context:get_option(trad_keyword)
+    local trad_mode = env.engine.context:get_option(Wubi98Context.trad_keyword)
     -- if segment.selected_index>page_size then
     -- 	local candidate_pos= math.fmod( segment.selected_index, page_size )
     -- end
@@ -122,8 +122,8 @@ local function selector(key, env)
       if key.keycode > 0x2f and key.keycode < 0x6a and idx > -1 then
         last_candidate = segment:get_candidate_at(idx).text or ""
       end
-      if context.input == rv_var.switch_schema and last_candidate and not trad_mode then -- 控制关键字切换方案
-        local sc_id = IsExistChar(enable_schema_list, last_candidate)
+      if context.input == Wubi98Context.rv_var.switch_schema and last_candidate and not trad_mode then -- 控制关键字切换方案
+        local sc_id = IsExistChar(Wubi98Context.enable_schema_list, last_candidate)
         -- env.engine:commit_text(last_candidate.."-"..sc_id)
         -- context:clear()
         if sc_id:find("%a") then
@@ -131,10 +131,10 @@ local function selector(key, env)
           return kAccepted
         end
       elseif
-        context.input == rv_var.switch_keyword and last_candidate
-        or trad_mode and context.input == rv_var.switch_schema and last_candidate
+        context.input == Wubi98Context.rv_var.switch_keyword and last_candidate
+        or trad_mode and context.input == Wubi98Context.rv_var.switch_schema and last_candidate
       then -- 关键字切换方案选项开关，如简繁切换、拆分开关等等
-        local keyword = get_switch_keywords(candidate_keywords, last_candidate)
+        local keyword = get_switch_keywords(Wubi98Context.candidate_keywords, last_candidate)
         -- env.engine:commit_text(last_candidate .. "-" .. keyword)
         if keyword ~= "" then
           local flag = env.engine.context:get_option(keyword)

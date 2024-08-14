@@ -13,12 +13,12 @@ import_tables:
   - 'dicts/openfly/openfly.secondary.short.code'
   - 'dicts/openfly/openfly.secondary'
   # - 'dicts/openfly/openfly.completion'
-  - 'dicts/openfly/openfly.embedded.hint'
+  # - 'dicts/openfly/openfly.embedded.hint'
   - 'dicts/openfly/openfly.off-table'
   - 'dicts/openfly/openfly.whimsicality'
   - 'dicts/openfly/openfly.symbols'
   - 'dicts/openfly/openfly.web'
   - 'dicts/openfly/openfly.uncommon'
   - 'dicts/openfly/openfly.user'
+  - 'dicts/openfly/openfly.extend'
 ...
-

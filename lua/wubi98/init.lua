@@ -1,4 +1,5 @@
 local local_require = require("util").get_local_require("wubi98")
+Wubi98Context = {}
 ------------------------------------
 ------wirting by 98wubi Group-------
 ------http://98wb.ys168.com/--------
@@ -10,25 +11,25 @@ local local_require = require("util").get_local_require("wubi98")
 
 -- --=========================================================;关键字修改--==========================================================
 -- --==========================================================--==========================================================
-rv_var = {
+Wubi98Context.rv_var = {
   week_var = "week",
   date_var = "date",
-  nl_var = "nlnl",
+  nl_var = "nl",
   time_var = "time",
-  jq_var = "jqjq",
+  jq_var = "jq",
   switch_keyword = "next",
   help = "help",
   switch_schema = "mode",
 } -- 编码关键字修改
-trad_keyword = "zh_trad" -- 简繁切换switcher参数
-single_keyword = "single_char" -- 单字过滤switcher参数
-spelling_keyword = "new_spelling" -- 拆分switcher参数
-GB2312_keyword = "GB2312" -- GB2312开关switcher参数
-candidate_keywords = {
-  { "简繁", "簡繁", trad_keyword },
-  { "拆分", "拆分", spelling_keyword },
-  { "GB2312过滤", "GB2312過濾", GB2312_keyword },
-  { "单字模式", "單字模式", single_keyword },
+Wubi98Context.trad_keyword = "zh_trad" -- 简繁切换switcher参数
+Wubi98Context.single_keyword = "single_char" -- 单字过滤switcher参数
+Wubi98Context.spelling_keyword = "new_spelling" -- 拆分switcher参数
+Wubi98Context.GB2312_keyword = "GB2312" -- GB2312开关switcher参数
+Wubi98Context.candidate_keywords = {
+  { "简繁", "簡繁", Wubi98Context.trad_keyword },
+  { "拆分", "拆分", Wubi98Context.spelling_keyword },
+  { "GB2312过滤", "GB2312過濾", Wubi98Context.GB2312_keyword },
+  { "单字模式", "單字模式", Wubi98Context.single_keyword },
 } -- 活动开关项关键字
 -- --==========================================================--==========================================================
 -- --==========================================================--==========================================================
@@ -105,7 +106,7 @@ end
 
 local rime_dirs = GetRimeAllDir()
 local RimeDefalutDir = ""
-enable_schema_list = get_schema_list()
+Wubi98Context.enable_schema_list = get_schema_list()
 local debug_path = debug.getinfo(1, "S").source:sub(2):sub(1, -10)
 if rime_dirs.shared_data_dir == debug_path then
   RimeDefalutDir = rime_dirs.shared_data_dir
@@ -114,16 +115,18 @@ elseif rime_dirs.user_data_dir == debug_path then
 else
   RimeDefalutDir = debug_path
 end
+lfmt("RimeDefalutDir: %s", RimeDefalutDir)
 -- --=========================================================精准造词文件存放路径===========================================================
 -- 精准造词文件存放路径 will export
-userphrasepath = ""
+Wubi98Context.userphrasepath = ""
 if RimeDefalutDir ~= "" then
   if RimeDefalutDir:find("\\") then
-    userphrasepath = RimeDefalutDir .. "\\userphrase.txt"
+    Wubi98Context.userphrasepath = RimeDefalutDir .. "\\userphrase.txt"
   elseif RimeDefalutDir:find("/") then
-    userphrasepath = RimeDefalutDir .. "/userphrase.txt"
+    Wubi98Context.userphrasepath = RimeDefalutDir .. "/userphrase.txt"
   end
 end
+lfmt("Wubi98Context.userphrasepath: %s", Wubi98Context.userphrasepath)
 -- --=========================================================读取lua目录下hotstring.txt文件===========================================================
 -- --======================================================格式：编码+Tab+字符串+Tab+字符串说明========================================================
 local function FileIsExist(name)
@@ -376,7 +379,7 @@ end
 
 -- 公历日期
 local function date_translator(input, seg)
-  local keyword = rv_var["date_var"]
+  local keyword = Wubi98Context.rv_var["date_var"]
   if input == keyword then
     local dates = {
       os.date("%Y-%m-%d"),
@@ -395,7 +398,7 @@ end
 
 -- 公历时间
 local function time_translator(input, seg)
-  local keyword = rv_var["time_var"]
+  local keyword = Wubi98Context.rv_var["time_var"]
   if input == keyword then
     local times = {
       os.date("%H:%M:%S"),
@@ -410,7 +413,7 @@ end
 
 -- 农历日期
 local function lunar_translator(input, seg)
-  local keyword = rv_var["nl_var"]
+  local keyword = Wubi98Context.rv_var["nl_var"]
   if input == keyword then
     local lunar = {
       {
@@ -502,13 +505,13 @@ end
 
 --- 单字模式
 function single_char(input, env)
-  local b = env.engine.context:get_option(single_keyword)
+  local b = env.engine.context:get_option(Wubi98Context.single_keyword)
   local input_text = env.engine.context.input
   for cand in input:iter() do
     if
       not b
       or utf8.len(cand.text) == 1
-      or table.vIn(rv_var, input_text)
+      or table.vIn(Wubi98Context.rv_var, input_text)
       or input_text:find("^z")
       or input_text:find("^[%u%p]")
     then
@@ -519,7 +522,7 @@ end
 
 -- 星期
 local function week_translator(input, seg)
-  local keyword = rv_var["week_var"]
+  local keyword = Wubi98Context.rv_var["week_var"]
   -- local luapath=debug.getinfo(1,"S").source:sub(2):sub(1,-9)   -- luapath.."lua\\user.txt"
   if input == keyword then
     local weeks = {
@@ -535,7 +538,7 @@ end
 
 --列出当年余下的节气
 local function Jq_translator(input, seg)
-  local keyword = rv_var["jq_var"]
+  local keyword = Wubi98Context.rv_var["jq_var"]
   if input == keyword then
     local jqs = lunarJq.GetNowTimeJq(os.date("%Y%m%d"))
     for i = 1, #jqs do
@@ -596,24 +599,24 @@ local function set_switch_keywords(input, seg, env)
   local schema_id = env.engine.schema.schema_id or ""
   local composition = env.engine.context.composition
   local segment = composition:back()
-  local trad_mode = env.engine.context:get_option(trad_keyword)
+  local trad_mode = env.engine.context:get_option(Wubi98Context.trad_keyword)
 
   if
-    input == rv_var.switch_keyword and #candidate_keywords > 0
-    or input == rv_var.switch_schema and #enable_schema_list > 0 and trad_mode
+    input == Wubi98Context.rv_var.switch_keyword and #Wubi98Context.candidate_keywords > 0
+    or input == Wubi98Context.rv_var.switch_schema and #Wubi98Context.enable_schema_list > 0 and trad_mode
   then
     if schema_name then
       segment.prompt = " 〔 当前方案：" .. schema_name .. " 〕"
     end
     local cand = nil
     local seg_text = ""
-    for i = 1, #candidate_keywords do
+    for i = 1, #Wubi98Context.candidate_keywords do
       if trad_mode then
-        seg_text = candidate_keywords[i][2]
+        seg_text = Wubi98Context.candidate_keywords[i][2]
       else
-        seg_text = candidate_keywords[i][1]
+        seg_text = Wubi98Context.candidate_keywords[i][1]
       end
-      if env.engine.context:get_option(candidate_keywords[i][3]) then
+      if env.engine.context:get_option(Wubi98Context.candidate_keywords[i][3]) then
         cand = Candidate(input, seg.start, seg._end, seg_text, "  ✓")
       else
         cand = Candidate(input, seg.start, seg._end, seg_text, "  ✕")
@@ -621,16 +624,16 @@ local function set_switch_keywords(input, seg, env)
       cand.quality = 100000000
       yield(cand)
     end
-  elseif input == rv_var.switch_schema and #enable_schema_list > 0 and not trad_mode then
+  elseif input == Wubi98Context.rv_var.switch_schema and #Wubi98Context.enable_schema_list > 0 and not trad_mode then
     local select_index = 1
-    for i = 1, #enable_schema_list do
-      if enable_schema_list[i][2] then
+    for i = 1, #Wubi98Context.enable_schema_list do
+      if Wubi98Context.enable_schema_list[i][2] then
         local comment = ""
-        if enable_schema_list[i][1] == schema_id then
+        if Wubi98Context.enable_schema_list[i][1] == schema_id then
           comment = "  ☚"
           select_index = i - 1
         end
-        local cand = Candidate(input, seg.start, seg._end, enable_schema_list[i][2], comment)
+        local cand = Candidate(input, seg.start, seg._end, Wubi98Context.enable_schema_list[i][2], comment)
         segment.selected_index = select_index
         cand.quality = 100000000
         yield(cand)

@@ -263,10 +263,10 @@ local function filter(input, env)
   local hide_pinyin = env.engine.context:get_option("new_hide_pinyin")
   local schema_name = env.engine.schema.schema_name or ""
   local schema_id = env.engine.schema.schema_id or ""
-  local spelling_states = env.engine.context:get_option(spelling_keyword)
+  local spelling_states = env.engine.context:get_option(Wubi98Context.spelling_keyword)
   local composition = env.engine.context.composition
   local segment = composition:back()
-  -- if codetext==rv_var.switch_keyword and schema_name then segment.prompt =" 〔 当前方案："..schema_name.." 〕" end
+  -- if codetext==Wubi98Context.rv_var.switch_keyword and schema_name then segment.prompt =" 〔 当前方案："..schema_name.." 〕" end
   -- 获取输入法常用参数
   -- env.engine.context:get_commit_text() -- filter中为获取提交词
   -- env.engine.context:get_script_text()-- 获取编码带引导符
@@ -292,7 +292,7 @@ local function filter(input, env)
           if cand.comment == "" then
             local comment = get_tricomment(cand, env)
             -- local rvlk_comment=
-            yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text, comment))
+            yield(Candidate(Wubi98Context.spelling_keyword, cand.start, cand._end, cand.text, comment))
           end
         else
           if
@@ -304,7 +304,7 @@ local function filter(input, env)
             local code_comment = env.code_rvdb:lookup(cand.text)
             if add_comment ~= nil or add_comment ~= "" then
               if cand.comment == "" then
-                yield(Candidate(spelling_keyword, cand.start, cand._end, cand.text, add_comment))
+                yield(Candidate(Wubi98Context.spelling_keyword, cand.start, cand._end, cand.text, add_comment))
               else
                 if cand.comment:find("(☯)") then
                   segment.prompt = "〔编码：" .. get_en_code(cand.text, env.spll_rvdb) .. "〕"
@@ -313,7 +313,7 @@ local function filter(input, env)
                   if utf8.len(cand.text) == 1 and code_comment and not hide_pinyin then
                     yield(
                       Candidate(
-                        spelling_keyword,
+                        Wubi98Context.spelling_keyword,
                         cand.start,
                         cand._end,
                         cand.text,
@@ -323,7 +323,7 @@ local function filter(input, env)
                   else
                     yield(
                       Candidate(
-                        spelling_keyword,
+                        Wubi98Context.spelling_keyword,
                         cand.start,
                         cand._end,
                         cand.text,
@@ -346,7 +346,7 @@ local function filter(input, env)
             else
               yield(cand)
             end
-          -- elseif script_text==rv_var.switch_keyword then
+          -- elseif script_text==Wubi98Context.rv_var.switch_keyword then
           -- 	if cand.text:find("方案") then cand.comment="〔 "..schema_name.." 〕" end
           -- 	yield(cand)
           else
@@ -434,7 +434,7 @@ local function filter(input, env)
           or not env.engine.context:get_option("GB2312")
         then
           table.insert(CandidateText, cand.text)
-          -- if script_text==rv_var.switch_keyword then
+          -- if script_text==Wubi98Context.rv_var.switch_keyword then
           -- 	if cand.text:find("方案") then cand.comment="〔 "..schema_name.." 〕" end
           -- end
           if cand.comment:find("(☯)") and script_text:find("^%`*(%l+%`%l+)") then
