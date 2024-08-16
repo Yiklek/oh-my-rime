@@ -20,5 +20,5 @@ import_tables:
   - 'dicts/openfly/openfly.web'
   - 'dicts/openfly/openfly.uncommon'
   - 'dicts/openfly/openfly.user'
-  - 'dicts/openfly/openfly.extend'
+  - 'build/openfly.extend'
 ...
