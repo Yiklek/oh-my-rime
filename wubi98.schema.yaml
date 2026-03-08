@@ -22,7 +22,7 @@ switches:
     reset: 0
     states: [ 简,繁 ]
   - name: new_spelling
-    reset: 1
+    reset: 0
     states: [ 隐,显 ]
   - name: rvl_zhuyin
     reset: 1
