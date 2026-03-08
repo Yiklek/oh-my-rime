@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "node",
+    "checkJs": true,
+    "allowJs": true,
+    "noEmit": true,
+    "typeRoots": ["./type"],
+    "types": ["rime"]
+  },
+  "include": ["*.js", "tests/**/*.js"],
+  "exclude": ["node_modules"]
+}
