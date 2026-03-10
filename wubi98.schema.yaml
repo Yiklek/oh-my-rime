@@ -46,12 +46,6 @@ switches:
     states: [ 半, 全 ]
 
 engine:
-  filters:
-    - simplifier
-    - lua_filter@single_char
-    - "reverse_lookup_filter@wubi_reverse_lookup_filter"
-    - qjs_filter@wubi98_spelling
-    - uniquifier
   processors:
     - ascii_composer
     - recognizer
@@ -76,6 +70,12 @@ engine:
     - "history_translator@history"
     - "lua_translator@helper"
     - "lua_translator@time_date"
+  filters:
+    - simplifier
+    - lua_filter@single_char
+    - "reverse_lookup_filter@wubi_reverse_lookup_filter"
+    - qjs_filter@wubi98_spelling
+    - uniquifier
 
 speller:
   auto_select: true
