@@ -38,9 +38,9 @@ switches:
     states: [ 词, 单 ]
   - name: jiayin
     reset: 1
-  # - name: ascii_punct
-  #   reset: 0
-  #   states: [ 。，, ．， ]
+  - name: ascii_punct
+    reset: 0
+    states: [ 。，, ．， ]
   - name: full_shape
     reset: 0
     states: [ 半, 全 ]
@@ -174,7 +174,8 @@ key_binder:
 
 punctuator:
   import_preset: symbols
-
+  digit_separators: ""
+  digit_separator_action: "commit"
 
 menu:
   page_size: 9
