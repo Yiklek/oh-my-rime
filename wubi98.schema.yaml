@@ -64,7 +64,7 @@ engine:
     - fallback_segmentor
   translators:
     - punct_translator
-    - "table_translator@py_translator"
+    - "script_translator@py_translator"
     - "table_translator@openfly_translator"
     - table_translator
     - "history_translator@history"
@@ -72,9 +72,9 @@ engine:
     - "lua_translator@time_date"
   filters:
     - simplifier
-    - lua_filter@single_char
+    # - lua_filter@single_char
     - "reverse_lookup_filter@wubi_reverse_lookup_filter"
-    - qjs_filter@wubi98_spelling
+    - qjs_filter@wubi98/spelling
     - uniquifier
 
 speller:
@@ -105,14 +105,38 @@ rvlk_segmentor:
 
 # table_translator 使用的配置块 - 包含翻译器所需的完整配置
 py_translator:
-  dictionary: py
+  dictionary: wanxiang
   tag: rvlk
   tips: "〔拼音反查〕"
+  enable_correction: false
+  enable_completion: true
+  core_word_length: 4          # >0 启用，按段学词 + 相邻段拼接
+  max_word_length: 7           # >0 启用，过长短语不记整词，只加元素权重
+  contextual_suggestions: false  #模型用来开启词组权重预测，效果一般关闭
+  max_homophones: 8
+  initial_quality: 3           #初始质量拼音的权重应该比英文大
+  spelling_hints: 30           #将注释以词典code字符串形式完全暴露，通过super_comment.lua完全接管，灵活配置。
+  always_show_comments: true   # Rime 默认在 preedit 等于 comment 时取消显示 comment，这里强制一直显示，供super_comment_preedit.lua做判断用。
+  comment_format: {comment}
 
 openfly_translator:
   dictionary: openfly
   tag: rvlk
   tips: "〔小鹤反查〕"
+  initial_quality: 100000
+  contextual_suggestions: false
+  max_homophones: 7
+  enable_sentence: false
+  enable_completion: true
+
+grammar:
+  language: wanxiang-lts-zh-hans
+  collocation_max_length: 7
+  collocation_min_length: 3
+  collocation_penalty: -10
+  non_collocation_penalty: 3
+  weak_collocation_penalty: -35
+  rear_penalty: -12
 
 wubi_reverse_lookup_filter:
   dictionary: wubi98_ci.extended

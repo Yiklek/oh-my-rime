@@ -1,6 +1,8 @@
 // Unit tests for wubi98_spelling.js
-import { assert, assertEquals, log } from './testutil.js'
-import { parseSpelling, xform, getCharCount, subspelling, parseSpell, isGB2312 } from '../wubi98_spelling_util.js'
+import { assert, assertEquals, log } from '../testutil.js'
+import { parseSpelling, xform, getCharCount, subspelling, parseSpell, isGB2312, getPhraseComment, getSingleCharComment, utf8Chars } from '../../wubi98/spelling_util.js'
+import { Wubi98Spelling } from '../../wubi98/spelling.js'
+
 
 // Helper to create mock Candidate
 function createMockCandidate(text, comment = '', type = 'simple', start = 0, end = 1, quality = 0) {
@@ -59,8 +61,6 @@ function createMockEnv(options = {}) {
     }
 }
 
-// Import the filter class
-import { Wubi98Spelling } from '../wubi98_spelling.js'
 
 // Override the Trie in the filter with mock
 function createFilterWithMockTrie(mockTrie) {
@@ -189,9 +189,6 @@ log('\nTest 6: FastFilter isApplicable', 'yellow')
     // Test that filter can be instantiated (the main test)
     assert(filter !== null, 'Filter should be created')
 }
-
-// Import additional utility functions
-import { getPhraseComment, getSingleCharComment, utf8Chars } from '../wubi98_spelling_util.js'
 
 // Test 7: utf8Chars function
 log('\nTest 7: utf8Chars function', 'yellow')

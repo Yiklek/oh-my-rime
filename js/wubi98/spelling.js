@@ -1,7 +1,7 @@
 // Wubi98 spelling filter - shows character breakdown/component info in candidate comments
 // Uses FastFilter pattern with iter.next() for high performance
 
-import { getCharCount, isGB2312, getPhraseComment, getSingleCharComment, convertSpellingYaml } from './wubi98_spelling_util.js'
+import { getCharCount, isGB2312, getPhraseComment, getSingleCharComment, convertSpellingYaml } from './spelling_util.js'
 
 /**
  * Wubi98Spelling Filter - FastFilter implementation

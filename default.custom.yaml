@@ -10,6 +10,11 @@ patch:
     - {schema: wubi98_ci}
     - {schema: wubi98_S}
     - {schema: wubi98_U}
+    - {schema: wubi98}
+    - {schema: wanxiang}
+    # - {schema: wanxiang_mixcode}
+    # - {schema: wanxiang_reverse}
+    # - {schema: wanxiang_english}
     # - {schema: wb_spelling}
     - {schema: py}
     - schema: xkjd6cx
