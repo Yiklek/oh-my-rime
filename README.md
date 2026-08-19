@@ -1,3 +1,5 @@
+
+
 # OH-MY-RIME
 ## 开源小鹤
 
@@ -13,8 +15,7 @@
 ### 词典分类
 
 - **首选字词** openfly.primary.dict.yaml
-- **次选字** openfly.secondary.char.dict.yaml
-- **次选词** openfly.secondary.word.dict.yaml
+- **次选** openfly.secondary.dict.yaml
 - **表外字** openfly.off-table.dict.yaml
 - **符号编码** openfly.symbols.dict.yaml
 - **快符号** openfly.fast.symbols.dict.yaml
